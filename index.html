@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Laurel Lane — Project Command</title>
+
+<!-- PWA -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#c55a11">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Laurel Lane">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="./icon-152.png">
+<link rel="apple-touch-icon" sizes="144x144" href="./icon-144.png">
+<link rel="apple-touch-icon" sizes="128x128" href="./icon-128.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0c0e; --surface:#111416; --surface2:#181c1f; --surface3:#1e2428;
+  --border:#2a3038; --border2:#3a4450;
+  --text:#c8d4dc; --text-dim:#6a7f8e; --text-bright:#e8f0f5;
+  --accent:#c55a11; --accent2:#e07030;
+  --green:#2d9e6e; --green-dim:#1a5c40;
+  --blue:#2e6da4; --blue-bright:#4a9fd4;
+  --yellow:#c8a020; --red:#a03030;
+  --mono:'Share Tech Mono',monospace;
+  --cond:'Barlow Condensed',sans-serif;
+  --body:'Barlow',sans-serif;
+  --shadow:none;
+  --theme-icon:'☀';
+}
+html.light {
+  --bg:#f0f2f4; --surface:#ffffff; --surface2:#f7f8fa; --surface3:#edf0f3;
+  --border:#d0d8e0; --border2:#b0bcc8;
+  --text:#2a3a4a; --text-dim:#7a8fa0; --text-bright:#0f1e2e;
+  --accent:#c55a11; --accent2:#a84a0e;
+  --green:#1e7a52; --green-dim:#c8eedc;
+  --blue:#2060a0; --blue-bright:#1a5090;
+  --yellow:#8a6a00; --red:#902020;
+  --shadow:0 1px 4px rgba(0,0,0,.10);
+  --theme-icon:'🌙';
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;min-height:100vh;transition:background .2s,color .2s;}
+/* Light mode specific overrides */
+html.light .ci{box-shadow:var(--shadow);}
+html.light .cc{box-shadow:var(--shadow);}
+html.light .nc{box-shadow:var(--shadow);}
+html.light .log-entry{box-shadow:var(--shadow);}
+html.light .substep:hover{background:rgba(0,0,0,.03);}
+html.light .ci-contact{background:rgba(46,109,164,.07);}
+html.light .modal-overlay-bg{background:rgba(0,0,0,.5);}
+html.light .notice{background:#f0f4f8;border-left-color:var(--blue);}
+html.light .callout-box{background:#fff8f0;}
+html.light .md-task-ref{background:rgba(197,90,17,.06);}
+html.light .phase-tag{background:rgba(197,90,17,.08);}
+/* Theme toggle button */
+.theme-btn{font-family:var(--mono);font-size:12px;padding:4px 10px;background:none;border:1px solid var(--border2);color:var(--text-dim);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent2);}
+/* HEADER */
+.header{background:var(--surface);border-bottom:2px solid var(--accent);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:100;gap:12px;}
+.hdr-title{font-family:var(--cond);font-weight:900;font-size:20px;letter-spacing:3px;text-transform:uppercase;color:var(--text-bright);white-space:nowrap;}
+.hdr-sub{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;white-space:nowrap;}
+.hdr-stats{font-family:var(--mono);font-size:11px;color:var(--text-dim);display:flex;gap:16px;flex-wrap:wrap;}
+.sv{color:var(--accent2);font-weight:bold;}
+/* NAV */
+.nav{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 12px;overflow-x:auto;}
+.nav-btn{font-family:var(--cond);font-weight:600;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);background:none;border:none;border-bottom:3px solid transparent;padding:10px 14px;cursor:pointer;white-space:nowrap;}
+.nav-btn:hover{color:var(--text);}
+.nav-btn.active{color:var(--accent2);border-bottom-color:var(--accent);}
+/* MAIN */
+.main{padding:16px;max-width:1100px;margin:0 auto;}
+.panel{display:none;}
+.panel.active{display:block;}
+/* PHASE */
+.phase-hdr{display:flex;align-items:center;gap:10px;margin:24px 0 8px;cursor:pointer;user-select:none;}
+.phase-hdr:first-child{margin-top:0;}
+.phase-tag{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--accent);background:rgba(197,90,17,.12);border:1px solid rgba(197,90,17,.3);padding:3px 7px;white-space:nowrap;}
+.phase-title{font-family:var(--cond);font-weight:700;font-size:16px;letter-spacing:1px;text-transform:uppercase;color:var(--text-bright);flex:1;}
+.phase-prog{font-family:var(--mono);font-size:11px;color:var(--text-dim);white-space:nowrap;}
+.phase-arrow{font-size:11px;color:var(--text-dim);transition:transform .2s;}
+.phase-hdr.col .phase-arrow{transform:rotate(-90deg);}
+.phase-line{height:1px;background:linear-gradient(90deg,var(--accent) 0%,var(--border) 60%,transparent 100%);margin-bottom:6px;}
+.prog-bar{height:2px;background:var(--border);margin-bottom:2px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--green-dim),var(--green));transition:width .3s ease;}
+.phase-body.col{display:none;}
+/* SECTION */
+.sec-hdr{display:flex;align-items:center;gap:8px;margin:14px 0 5px;padding-left:8px;border-left:2px solid var(--blue);}
+.sec-title{font-family:var(--cond);font-weight:600;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--blue-bright);flex:1;}
+.add-task-btn{font-family:var(--mono);font-size:10px;padding:2px 8px;background:none;border:1px solid var(--border2);color:var(--text-dim);cursor:pointer;transition:all .15s;}
+.add-task-btn:hover{border-color:var(--accent);color:var(--accent2);}
+/* CHECK ITEM */
+.ci{display:flex;align-items:flex-start;gap:8px;padding:8px 8px 8px 10px;border:1px solid var(--border);background:var(--surface2);margin-bottom:2px;transition:background .15s;}
+.ci:hover{background:var(--surface3);}
+.ci.done{opacity:.5;}
+.ci.done .ci-text{text-decoration:line-through;color:var(--text-dim);}
+.ci.gate-item{border-left:3px solid var(--red);}
+.ci.gate-item.done{border-left-color:var(--green);}
+.cb{width:18px;height:18px;border:1px solid var(--border2);background:var(--bg);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;}
+.ci.done .cb{background:var(--green-dim);border-color:var(--green);}
+.ck{color:var(--green);font-size:11px;display:none;}
+.ci.done .ck{display:block;}
+.ci-body{flex:1;min-width:0;}
+.gate-lbl{font-family:var(--mono);font-size:9px;color:var(--red);letter-spacing:1px;margin-bottom:1px;}
+.ci.done .gate-lbl{color:var(--green);}
+.ci-text{color:var(--text);line-height:1.4;font-size:13px;}
+.ci-note{font-family:var(--mono);font-size:11px;color:var(--text-dim);margin-top:3px;line-height:1.4;}
+.ci-note::before{content:'→ ';color:var(--accent);}
+.ci-usernote{font-size:12px;color:var(--yellow);margin-top:3px;font-style:italic;line-height:1.4;}
+.ci-usernote::before{content:'✎ ';}
+.ci-hours{font-family:var(--mono);font-size:10px;color:var(--green);margin-top:2px;}
+.ci-hours::before{content:'⏱ ';}
+.ci-contact{display:flex;align-items:center;gap:8px;margin-top:6px;margin-left:0;padding:5px 8px 5px 10px;background:rgba(46,109,164,.08);border-left:2px solid var(--blue-bright);position:relative;}
+.ci-contact-icon{font-size:14px;color:var(--blue-bright);flex-shrink:0;}
+.ci-contact-body{flex:1;min-width:0;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px;}
+.ci-contact-name{font-family:var(--cond);font-weight:700;font-size:14px;color:var(--text-bright);letter-spacing:.3px;white-space:nowrap;}
+.ci-contact-sep{color:var(--border2);font-size:11px;}
+.ci-contact-org{font-family:var(--mono);font-size:10px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ci-contact-phone{font-family:var(--mono);font-size:10px;color:var(--blue-bright);margin-left:4px;white-space:nowrap;}
+/* MOVE BUTTONS */
+.ia-move{width:20px;height:20px;display:flex;align-items:center;justify-content:center;background:none;border:1px solid transparent;cursor:pointer;font-size:10px;transition:all .15s;color:var(--border2);flex-shrink:0;}
+.ia-move:hover{border-color:var(--border2);color:var(--text);background:var(--surface);}
+.ci-move{display:flex;flex-direction:column;gap:1px;align-self:center;flex-shrink:0;}
+/* SUBSTEPS */
+.substep-list{margin-left:0;margin-top:4px;border-left:2px solid var(--border);padding-left:0;}
+.substep{display:flex;align-items:center;gap:6px;padding:4px 8px;background:transparent;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+.substep:last-child{border-bottom:none;}
+.substep:hover{background:rgba(255,255,255,.03);}
+.substep.done .ss-text{text-decoration:line-through;color:var(--text-dim);}
+.ss-cb{width:13px;height:13px;border:1px solid var(--border2);background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--green);}
+.substep.done .ss-cb{background:var(--green-dim);border-color:var(--green);}
+.ss-text{font-size:12px;color:var(--text);flex:1;line-height:1.3;}
+.ss-edit-btn{font-size:10px;color:var(--border2);background:none;border:none;cursor:pointer;padding:0 3px;opacity:0;transition:opacity .15s;line-height:1;}
+.substep:hover .ss-edit-btn,.substep:hover .ss-del{opacity:1;}
+.ss-del{font-size:12px;color:var(--border2);background:none;border:none;cursor:pointer;padding:0 3px;opacity:0;transition:opacity .15s;line-height:1;}
+.ss-del:hover{color:var(--red);}
+.ss-edit-btn:hover{color:var(--accent2);}
+.ss-inline-edit{display:flex;gap:4px;padding:4px 8px;border-bottom:1px solid var(--border);background:var(--bg);}
+.ss-inline-input{flex:1;background:var(--surface2);border:1px solid var(--accent);color:var(--text-bright);padding:4px 7px;font-family:var(--body);font-size:12px;outline:none;}
+.ss-inline-save{font-family:var(--mono);font-size:10px;padding:3px 8px;background:rgba(197,90,17,.2);border:1px solid var(--accent);color:var(--accent2);cursor:pointer;}
+.ss-inline-cancel{font-family:var(--mono);font-size:10px;padding:3px 8px;background:none;border:1px solid var(--border2);color:var(--text-dim);cursor:pointer;}
+.add-substep-row{display:flex;align-items:center;gap:0;margin-top:3px;border-left:2px solid var(--border);}
+.add-substep-inp{flex:1;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);padding:4px 8px;font-family:var(--body);font-size:12px;outline:none;display:none;}
+.add-substep-inp:focus{border-bottom-color:var(--accent);}
+.add-substep-inp.open{display:block;}
+.add-substep-btn{font-family:var(--mono);font-size:10px;color:var(--text-dim);background:none;border:none;cursor:pointer;padding:4px 8px;display:block;transition:color .15s;}
+.add-substep-btn:hover{color:var(--accent2);}
+/* TASK ACTION ICONS */
+.ci-actions{display:flex;gap:4px;flex-shrink:0;align-items:flex-start;padding-top:1px;}
+.ia{width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:none;border:1px solid transparent;cursor:pointer;font-size:14px;transition:all .15s;color:var(--text-dim);flex-shrink:0;}
+.ia:hover{border-color:var(--border2);color:var(--text-bright);background:var(--surface);}
+.ia.has-note{color:var(--yellow);}
+.ia.has-log{color:var(--green);}
+/* CONTACTS */
+.contacts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;}
+.cc{background:var(--surface2);border:1px solid var(--border);padding:14px;transition:border-color .15s;}
+.cc:hover{border-color:var(--border2);}
+.cc-name{font-family:var(--cond);font-weight:700;font-size:15px;color:var(--text-bright);}
+.cc-role{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.cc-details{margin-top:10px;display:flex;flex-direction:column;gap:3px;}
+.cc-row{display:flex;gap:8px;align-items:flex-start;font-size:12px;}
+.cc-lbl{font-family:var(--mono);font-size:10px;color:var(--text-dim);width:44px;flex-shrink:0;padding-top:1px;}
+.cc-val{color:var(--text);word-break:break-all;}
+.cc-val a{color:var(--blue-bright);text-decoration:none;}
+.cc-val a:hover{text-decoration:underline;}
+.cc-note{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:12px;color:var(--text-dim);font-style:italic;line-height:1.5;}
+.cc-acts{display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);}
+/* NOTES */
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;}
+.nc{background:var(--surface2);border:1px solid var(--border);padding:14px;}
+.nc-tag{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px;}
+.nc-title{font-family:var(--cond);font-weight:700;font-size:15px;color:var(--text-bright);margin-bottom:8px;}
+.nc-body{font-size:13px;color:var(--text);line-height:1.55;white-space:pre-wrap;word-break:break-word;}
+.nc-url{color:var(--blue-bright);text-decoration:none;font-size:12px;word-break:break-all;}
+.nc-url:hover{text-decoration:underline;}
+.nc-date{font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:8px;padding-top:6px;border-top:1px solid var(--border);}
+.nc-acts{display:flex;gap:6px;margin-top:8px;}
+/* HOURS LOG */
+.log-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px;}
+.ls-card{background:var(--surface2);border:1px solid var(--border);padding:14px;text-align:center;}
+.ls-num{font-family:var(--cond);font-size:36px;font-weight:900;color:var(--accent2);line-height:1;margin-bottom:3px;}
+.ls-lbl{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;}
+.log-entry{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--border);background:var(--surface2);margin-bottom:3px;align-items:flex-start;}
+.le-date{font-family:var(--mono);font-size:11px;color:var(--text-dim);white-space:nowrap;min-width:80px;}
+.le-hours{font-family:var(--cond);font-weight:700;font-size:18px;color:var(--accent2);white-space:nowrap;min-width:50px;text-align:right;}
+.le-body{flex:1;min-width:0;}
+.le-task{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:1px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.le-loc{font-family:var(--mono);font-size:10px;color:var(--blue-bright);margin-bottom:2px;}
+.le-type{font-family:var(--mono);font-size:10px;color:var(--text-dim);display:inline-block;border:1px solid var(--border2);padding:1px 5px;margin-bottom:4px;}
+.le-desc{font-size:12px;color:var(--text);line-height:1.4;}
+.le-acts{flex-shrink:0;display:flex;gap:4px;}
+/* BUTTONS */
+.btn{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;background:var(--surface);border:1px solid var(--border2);color:var(--text-dim);cursor:pointer;transition:all .15s;}
+.btn:hover{color:var(--text-bright);border-color:var(--accent);}
+.btn-p{background:rgba(197,90,17,.15);border-color:var(--accent);color:var(--accent2);}
+.btn-p:hover{background:rgba(197,90,17,.3);color:var(--text-bright);}
+.btn-d{border-color:var(--red);color:var(--red);}
+.btn-d:hover{background:rgba(160,48,48,.2);}
+.btn-sm{padding:3px 8px;font-size:10px;}
+/* FILTER/ADD BAR */
+.add-bar{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.search-inp{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 10px;font-family:var(--mono);font-size:12px;width:180px;outline:none;}
+.search-inp:focus{border-color:var(--accent);}
+.search-inp::placeholder{color:var(--text-dim);}
+.fbtn{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:4px 9px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;transition:all .15s;}
+.fbtn:hover{color:var(--text);}
+.fbtn.active{background:rgba(197,90,17,.15);border-color:var(--accent);color:var(--accent2);}
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center;padding:16px;}
+.mo.open{display:flex;}
+.md{background:var(--surface2);border:1px solid var(--border2);border-top:2px solid var(--accent);width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:20px;}
+.md-lg{max-width:620px;}
+.md-title{font-family:var(--cond);font-weight:700;font-size:17px;letter-spacing:2px;text-transform:uppercase;color:var(--text-bright);margin-bottom:16px;}
+.md-task-ref{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:1px;margin-bottom:14px;padding:6px 10px;background:rgba(197,90,17,.08);border-left:2px solid var(--accent);}
+.fg{margin-bottom:12px;}
+.fl{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);display:block;margin-bottom:4px;}
+.fi,.fta,.fsel{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text-bright);padding:8px 10px;font-family:var(--body);font-size:13px;outline:none;transition:border-color .15s;}
+.fi:focus,.fta:focus,.fsel:focus{border-color:var(--accent);}
+.fta{min-height:70px;resize:vertical;}
+.fsel{cursor:pointer;}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.md-acts{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;}
+/* EMPTY */
+.empty{text-align:center;padding:40px 24px;color:var(--text-dim);font-family:var(--mono);font-size:12px;letter-spacing:1px;}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);}
+::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="hdr-title">LAUREL LANE</div>
+    <div class="hdr-sub">PROJECT COMMAND</div>
+  </div>
+  <div class="hdr-stats">
+    <span>TASKS <span class="sv" id="sDone">0</span>/<span class="sv" id="sTotal">0</span></span>
+    <span>HRS <span class="sv" id="sHours">0</span></span>
+    <span>CONTACTS <span class="sv" id="sCont">0</span></span>
+  </div>
+</div>
+<div class="nav">
+  <button class="nav-btn active" onclick="switchTab('checklist',this)">&#9632; Checklist</button>
+  <button class="nav-btn" onclick="switchTab('hours',this)">&#9632; Hours Log</button>
+  <button class="nav-btn" onclick="switchTab('contacts',this)">&#9632; Contacts</button>
+  <button class="nav-btn" onclick="switchTab('notes',this)">&#9632; Notes &amp; Links</button>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:6px;padding:0 8px;">
+    <button class="btn btn-sm btn-p" onclick="exportAllData()" title="Export full backup as JSON">&#8681; BACKUP</button>
+    <button class="btn btn-sm" onclick="triggerImport()" title="Restore from backup JSON">&#8679; RESTORE</button>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle light/dark theme">☀ LIGHT</button>
+    <button class="btn btn-sm btn-p" id="installBtn" onclick="triggerInstall()" style="display:none;" title="Install app to home screen">&#8615; INSTALL</button>
+    <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importAllData(event)">
+  </div>
+</div>
+<div class="main">
+
+<!-- CHECKLIST -->
+<div class="panel active" id="panel-checklist">
+  <div class="add-bar">
+    <input class="search-inp" id="ckSearch" placeholder="SEARCH TASKS..." oninput="renderChecklist()">
+    <div style="margin-left:auto;display:flex;gap:5px;">
+      <button class="fbtn active" id="fa" onclick="setFilter('all',this)">ALL</button>
+      <button class="fbtn" id="fo" onclick="setFilter('open',this)">OPEN</button>
+      <button class="fbtn" id="fd" onclick="setFilter('done',this)">DONE</button>
+    </div>
+  </div>
+  <div id="ckContainer"></div>
+</div>
+
+<!-- HOURS LOG -->
+<div class="panel" id="panel-hours">
+  <div class="add-bar">
+    <button class="btn btn-p" onclick="openLogModal(null)">+ LOG TIME</button>
+    <input class="search-inp" id="logSearch" placeholder="SEARCH LOG..." oninput="renderLog()" style="margin-left:8px;">
+    <div style="margin-left:auto;display:flex;gap:5px;">
+      <button class="fbtn active" id="lfa" onclick="setLogFilter('all',this)">ALL</button>
+      <button class="fbtn" id="lfp" onclick="setLogFilter('phase',this)">BY PHASE</button>
+    </div>
+    <button class="btn btn-sm" onclick="exportLog()" style="margin-left:4px;" title="Export log as CSV">&#8681; CSV</button>
+    <button class="btn btn-sm" onclick="exportTaxReport()" style="margin-left:4px;" title="Export formatted tax report">&#8681; TAX REPORT</button>
+  </div>
+  <div class="log-summary" id="logSummary"></div>
+  <div id="logContainer"></div>
+</div>
+
+<!-- CONTACTS -->
+<div class="panel" id="panel-contacts">
+  <div class="add-bar">
+    <button class="btn btn-p" onclick="openContactModal()">+ ADD CONTACT</button>
+    <input class="search-inp" id="ccSearch" placeholder="SEARCH..." oninput="renderContacts()" style="margin-left:8px;">
+    <div style="margin-left:auto;display:flex;gap:4px;flex-wrap:wrap;">
+      <button class="fbtn active" onclick="setContactFilter('all',this)">ALL</button>
+      <button class="fbtn" onclick="setContactFilter('Legal',this)">LEGAL</button>
+      <button class="fbtn" onclick="setContactFilter('Government',this)">GOVT</button>
+      <button class="fbtn" onclick="setContactFilter('Finance',this)">FINANCE</button>
+      <button class="fbtn" onclick="setContactFilter('Construction',this)">BUILD</button>
+      <button class="fbtn" onclick="setContactFilter('Professional',this)">PRO</button>
+      <button class="fbtn" onclick="setContactFilter('Other',this)">OTHER</button>
+    </div>
+  </div>
+  <div class="contacts-grid" id="ccGrid"></div>
+</div>
+
+<!-- NOTES -->
+<div class="panel" id="panel-notes">
+  <div class="add-bar">
+    <button class="btn btn-p" onclick="openNoteModal('note')">+ NOTE</button>
+    <button class="btn" onclick="openNoteModal('link')" style="margin-left:4px;">+ LINK</button>
+    <input class="search-inp" id="ntSearch" placeholder="SEARCH..." oninput="renderNotes()" style="margin-left:8px;">
+    <div style="margin-left:auto;display:flex;gap:4px;">
+      <button class="fbtn active" onclick="setNoteFilter('all',this)">ALL</button>
+      <button class="fbtn" onclick="setNoteFilter('note',this)">NOTES</button>
+      <button class="fbtn" onclick="setNoteFilter('link',this)">LINKS</button>
+    </div>
+  </div>
+  <div class="notes-grid" id="ntGrid"></div>
+</div>
+
+</div><!-- /main -->
+
+<!-- TASK NOTE MODAL -->
+<div class="mo" id="moTaskNote">
+  <div class="md" style="max-width:560px;">
+    <div class="md-title">TASK NOTE &amp; CONTACT</div>
+    <div class="md-task-ref" id="tnTaskRef"></div>
+    <div class="fg">
+      <label class="fl">Edit Task Text</label>
+      <input class="fi" id="tnText" placeholder="Task description">
+    </div>
+    <div class="fg">
+      <label class="fl">Built-in Hint (shown in gray)</label>
+      <input class="fi" id="tnHint" placeholder="Optional hint / reminder">
+    </div>
+    <div class="fg">
+      <label class="fl">Your Note</label>
+      <textarea class="fta" id="tnNote" placeholder="Your notes, quotes, dates, decisions..." style="min-height:70px;"></textarea>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:12px;">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--blue-bright);margin-bottom:10px;">ASSOCIATED CONTACT</div>
+      <div class="fg-row">
+        <div class="fg"><label class="fl">Name</label><input class="fi" id="tnCName" placeholder="Contact name"></div>
+        <div class="fg"><label class="fl">Organization</label><input class="fi" id="tnCOrg" placeholder="Org / company"></div>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label class="fl">Phone</label><input class="fi" id="tnCPhone" placeholder="(xxx) xxx-xxxx"></div>
+        <div class="fg"><label class="fl">Email</label><input class="fi" id="tnCEmail" placeholder="email@domain.com"></div>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label class="fl">Category</label>
+          <select class="fsel" id="tnCCat">
+            <option value="">— Select —</option>
+            <option>Legal</option><option>Government</option><option>Finance</option>
+            <option>Construction</option><option>Professional</option><option>Other</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Website / Link</label><input class="fi" id="tnCLink" placeholder="https://"></div>
+      </div>
+      <div class="fg" style="margin-top:4px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--text-dim);">
+          <input type="checkbox" id="tnCSave" style="accent-color:var(--accent);width:14px;height:14px;">
+          Save contact to Contacts section (with this task in notes)
+        </label>
+      </div>
+    </div>
+    <div class="md-acts">
+      <button class="btn btn-d btn-sm" id="tnDelBtn" onclick="deleteCustomTask()" style="margin-right:auto;display:none;">DELETE TASK</button>
+      <button class="btn" onclick="closeModal('moTaskNote')">CANCEL</button>
+      <button class="btn btn-p" onclick="saveTaskNote()">SAVE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD TASK MODAL -->
+<div class="mo" id="moAddTask">
+  <div class="md" style="max-width:560px;">
+    <div class="md-title">ADD TASK</div>
+    <div class="md-task-ref" id="atSectionRef"></div>
+    <div class="fg">
+      <label class="fl">Task Description</label>
+      <input class="fi" id="atText" placeholder="What needs to be done?">
+    </div>
+    <div class="fg">
+      <label class="fl">Note / Reminder (optional)</label>
+      <input class="fi" id="atNote" placeholder="Context, deadline, contact...">
+    </div>
+    <div class="fg">
+      <label class="fl">Gate Item? (failure stops progress)</label>
+      <select class="fsel" id="atGate">
+        <option value="0">No</option>
+        <option value="1">Yes — Gate Item</option>
+      </select>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:14px 0 12px;padding-top:12px;">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--blue-bright);margin-bottom:10px;">ASSOCIATED CONTACT <span style="color:var(--text-dim);font-weight:normal;">(optional)</span></div>
+      <div class="fg-row">
+        <div class="fg"><label class="fl">Name</label><input class="fi" id="atCName" placeholder="Contact name"></div>
+        <div class="fg"><label class="fl">Organization</label><input class="fi" id="atCOrg" placeholder="Org / company"></div>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label class="fl">Phone</label><input class="fi" id="atCPhone" placeholder="(xxx) xxx-xxxx"></div>
+        <div class="fg"><label class="fl">Email</label><input class="fi" id="atCEmail" placeholder="email@domain.com"></div>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label class="fl">Category</label>
+          <select class="fsel" id="atCCat">
+            <option value="">— Select —</option>
+            <option>Legal</option><option>Government</option><option>Finance</option>
+            <option>Construction</option><option>Professional</option><option>Other</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Website / Link</label><input class="fi" id="atCLink" placeholder="https://"></div>
+      </div>
+      <div class="fg" style="margin-top:4px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--text-dim);">
+          <input type="checkbox" id="atCSave" style="accent-color:var(--accent);width:14px;height:14px;">
+          Save contact to Contacts section (with this task in notes)
+        </label>
+      </div>
+    </div>
+    <div class="md-acts">
+      <button class="btn" onclick="closeModal('moAddTask')">CANCEL</button>
+      <button class="btn btn-p" onclick="saveNewTask()">ADD TASK</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOG TIME MODAL -->
+<div class="mo" id="moLog">
+  <div class="md md-lg">
+    <div class="md-title">LOG WORK TIME</div>
+    <div class="md-task-ref" id="logTaskRef" style="display:none;"></div>
+    <div class="fg-row">
+      <div class="fg">
+        <label class="fl">Date</label>
+        <input class="fi" id="lgDate" type="date">
+      </div>
+      <div class="fg">
+        <label class="fl">Hours Spent</label>
+        <input class="fi" id="lgHours" type="number" step="0.25" min="0.25" placeholder="e.g. 1.5">
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Location</label>
+      <input class="fi" id="lgLoc" placeholder="e.g. On-site Laurel Lane / Phone / Remote - Glenside" list="locList">
+      <datalist id="locList">
+        <option value="On-site — Laurel Lane, Kerhonkson NY">
+        <option value="Remote — Glenside PA">
+        <option value="Phone call">
+        <option value="Video call">
+        <option value="Email / Administrative">
+        <option value="In transit">
+      </datalist>
+    </div>
+    <div class="fg">
+      <label class="fl">Work Type</label>
+      <select class="fsel" id="lgType">
+        <option value="On-site inspection">On-site inspection</option>
+        <option value="Phone call">Phone call</option>
+        <option value="Research / Review">Research / Review</option>
+        <option value="Administrative">Administrative (filing, forms, LLC)</option>
+        <option value="Contractor coordination">Contractor coordination</option>
+        <option value="Attorney / Professional meeting">Attorney / Professional meeting</option>
+        <option value="Financial / Banking">Financial / Banking</option>
+        <option value="Planning / Analysis">Planning / Analysis</option>
+        <option value="Travel to/from site">Travel to/from site</option>
+        <option value="Guest management">Guest management (STR)</option>
+        <option value="Maintenance">Maintenance / Repairs</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Task / Association</label>
+      <input class="fi" id="lgTaskLabel" placeholder="Task this applies to (or leave blank for general)">
+    </div>
+    <div class="fg">
+      <label class="fl">Description of Work Done</label>
+      <textarea class="fta" id="lgDesc" placeholder="Describe what was accomplished, decisions made, next steps..." style="min-height:90px;"></textarea>
+    </div>
+    <div class="md-acts">
+      <button class="btn" onclick="closeModal('moLog')">CANCEL</button>
+      <button class="btn btn-p" onclick="saveLogEntry()">SAVE</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT MODAL -->
+<div class="mo" id="moContact">
+  <div class="md">
+    <div class="md-title" id="ccModalTitle">ADD CONTACT</div>
+    <div class="fg"><label class="fl">Name</label><input class="fi" id="ccName"></div>
+    <div class="fg"><label class="fl">Organization</label><input class="fi" id="ccOrg"></div>
+    <div class="fg"><label class="fl">Category</label>
+      <select class="fsel" id="ccCat">
+        <option>Legal</option><option>Government</option><option>Finance</option>
+        <option>Construction</option><option>Professional</option><option>Other</option>
+      </select>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Phone</label><input class="fi" id="ccPhone"></div>
+      <div class="fg"><label class="fl">Email</label><input class="fi" id="ccEmail"></div>
+    </div>
+    <div class="fg"><label class="fl">Website / Link</label><input class="fi" id="ccLink" placeholder="https://"></div>
+    <div class="fg"><label class="fl">Notes</label><textarea class="fta" id="ccNotes"></textarea></div>
+    <div class="md-acts">
+      <button class="btn" onclick="closeModal('moContact')">CANCEL</button>
+      <button class="btn btn-p" onclick="saveContact()">SAVE</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE MODAL -->
+<div class="mo" id="moNote">
+  <div class="md">
+    <div class="md-title" id="ntModalTitle">ADD NOTE</div>
+    <input type="hidden" id="ntType" value="note">
+    <div class="fg"><label class="fl">Title</label><input class="fi" id="ntTitle"></div>
+    <div class="fg" id="ntUrlGroup" style="display:none;"><label class="fl">URL</label><input class="fi" id="ntUrl" placeholder="https://"></div>
+    <div class="fg"><label class="fl">Content</label><textarea class="fta" id="ntBody" style="min-height:100px;"></textarea></div>
+    <div class="fg"><label class="fl">Tag</label><input class="fi" id="ntTag" placeholder="e.g. Zoning, Finance, Legal"></div>
+    <div class="md-acts">
+      <button class="btn" onclick="closeModal('moNote')">CANCEL</button>
+      <button class="btn btn-p" onclick="saveNote()">SAVE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────────────────────────────────────────
+// PHASE DATA
+// ──────────────────────────────────────────────────────────────────────────────
+const PHASES=[
+  {id:'p0',tag:'PHASE 0',title:'Pre-Offer Due Diligence',subtitle:'Complete BEFORE any offer',sections:[
+    {id:'p0s0',title:'GATE 1 — Zoning & Regulatory',gate:true,items:[
+      {id:'g1a',text:'Call Town of Rochester CEO Keith Roosa: (845) 626-2433 Ext. 2',note:'ceo@townofrochester.ny.gov — FIRST CALL'},
+      {id:'g1b',text:'Confirm: Cabin colony permitted/SUP in Res-1 zoning?',note:'Ask about permanent insulated cabins on foundations, not tent or camping cabins'},
+      {id:'g1c',text:'Confirm: Cabin colony subject to Town of Rochester STR permit cap?',note:'Make-or-break question for the investment model'},
+      {id:'g1d',text:'Confirm: SUP process, timeline, and estimated fees'},
+      {id:'g1e',text:'Ask: Known wetlands, floodplain, or conservation overlays on parcels?',note:'Ask about stream and NYSDEC Article 15 designation'},
+      {id:'g1f',text:'Call Ulster County Health Dept — NYSDOH Subpart 7-1 pre-app',note:'Water supply, septic, site plan, fees, timeline'},
+      {id:'g1g',text:'FEMA flood zone lookup at msc.fema.gov using parcel GPS',note:'AE or AO zone = mandatory flood insurance'},
+      {id:'g1h',text:'Call NYSDEC Region 3 stream determination: (845) 256-3000',note:'Article 15 regulated? Estimated 100-ft buffer footprint?'},
+    ]},
+    {id:'p0s1',title:'GATE 2 — Title & Boundary',gate:true,items:[
+      {id:'g2a',text:'Engage NY-licensed real property attorney with rural land/title experience'},
+      {id:'g2b',text:'Attorney: Pull and review all four parcel deeds from Ulster County Clerk'},
+      {id:'g2c',text:'Attorney: Chain of title each parcel — gaps, missing heirs, estate conveyances'},
+      {id:'g2d',text:'Attorney: All recorded easements, rights-of-way, deed restrictions per parcel'},
+      {id:'g2e',text:'Attorney: Confirm 3 access points legally appurtenant to parcels',note:'Rt 44/55 frontage, Rock Haven Rd, Laurel Ln'},
+      {id:'g2f',text:'Attorney: Delinquent taxes, municipal liens, environmental notices?'},
+      {id:'g2g',text:'Attorney: All 4 parcels can be conveyed together to single LLC?'},
+      {id:'g2h',text:'Order boundary survey — all four parcels',note:'Budget $7,000–$10,000; licensed NY surveyor, Ulster County experience'},
+      {id:'g2i',text:'Survey: Confirm stream boundary treatment'},
+      {id:'g2j',text:'Survey: Confirm all three road frontages at described widths'},
+      {id:'g2k',text:'Survey: Calculate net developable acreage after 100-ft stream buffer'},
+      {id:'g2l',text:'Order preliminary title commitment',note:'$300–$800; required before attorney can fully assess'},
+      {id:'g2m',text:'Review title commitment with attorney — all Schedule B exceptions'},
+    ]},
+    {id:'p0s2',title:'GATE 3 — Site Feasibility',gate:true,items:[
+      {id:'g3a',text:'Engage licensed PE for septic feasibility',note:'Scope for ~1,000 GPD cabin colony demand + future expansion'},
+      {id:'g3b',text:'Perc test / soil morphology — minimum 2 test locations',note:'Fragipan hardpan possible — failure ends project'},
+      {id:'g3c',text:'Identify viable well location away from stream and septic field'},
+      {id:'g3d',text:'Confirm electric service at road',note:'If not at road, get extension cost estimate from Ulster County REC or Central Hudson'},
+      {id:'g3e',text:'Walk property with surveyor/engineer — build sites, terrain, buffer flags'},
+    ]},
+  ]},
+  {id:'p1a',tag:'PHASE 1A',title:'Offer & Acquisition',subtitle:'After Gates 0–2 pass',sections:[
+    {id:'p1as0',title:'LLC FORMATION',gate:false,items:[
+      {id:'llc1',text:'Form LandCo LLC — New York domestic LLC',note:'$200 Articles of Organization; dos.ny.gov'},
+      {id:'llc2',text:'Form OpCo LLC — New York domestic LLC',note:'OpCo holds STR operating agreements; LandCo holds title'},
+      {id:'llc3',text:'Draft Operating Agreements for both LLCs — attorney review'},
+      {id:'llc4',text:'Obtain EINs for both LLCs at IRS.gov'},
+      {id:'llc5',text:'Open business checking accounts for both LLCs'},
+      {id:'llc6',text:'Begin Ulster County publication requirement for both LLCs',note:'~$300–$500 per LLC; 6 consecutive weeks in two Ulster County newspapers'},
+      {id:'llc7',text:'File Certificate of Publication with NY DOS within 120 days'},
+    ]},
+    {id:'p1as1',title:'PURCHASE CONTRACT',gate:false,items:[
+      {id:'pc1',text:'Submit offer — LandCo LLC as buyer'},
+      {id:'pc2',text:'Contingency: Satisfactory boundary survey (all 4 parcels, 3 access points)'},
+      {id:'pc3',text:'Contingency: Clear and insurable title to all four parcels'},
+      {id:'pc4',text:'Contingency: Successful perc test and SEO'},
+      {id:'pc5',text:'Contingency: Town of Rochester cabin colony zoning confirmation'},
+      {id:'pc6',text:'Contingency: Financing'},
+      {id:'pc7',text:'Request all prior surveys, deeds, environmental reports from seller'},
+      {id:'pc8',text:'Request seller disclosure: drainage, spring seeps, wetland determinations'},
+      {id:'pc9',text:'Attorney reviews fully executed purchase agreement before signing'},
+    ]},
+    {id:'p1as2',title:'FINANCING',gate:false,items:[
+      {id:'fn1',text:'File VOSB certification at vetcert.sba.gov',note:'Required before SBA 504 application; file after LLC formation'},
+      {id:'fn2',text:'Call Pursuit Lending CDC: (212) 868-6700 — SBA 504 Veterans Advantage',note:'Confirm NAICS 721199; discuss land + cabin construction as single project'},
+      {id:'fn3',text:'Backup CDC: Empire State CDC (518) 463-2268'},
+      {id:'fn4',text:'If land loan needed: Farm Credit East or community bank',note:'Typical: 25% down, 8%, 15yr'},
+      {id:'fn5',text:'Engage construction lender — construction-to-perm preferred'},
+      {id:'fn6',text:'Collect 504 docs: 3yr returns, YTD P&L, debt schedule, personal financial statement'},
+    ]},
+    {id:'p1as3',title:'CLOSING',gate:false,items:[
+      {id:'cl1',text:'Title insurance — owner\'s policy for LandCo LLC',note:'Extended coverage endorsement given messy deed history'},
+      {id:'cl2',text:'Confirm all four parcels conveyed under single deed to LandCo LLC'},
+      {id:'cl3',text:'Record deed immediately at Ulster County Clerk'},
+      {id:'cl4',text:'Confirm all tax liens and municipal charges paid at closing'},
+      {id:'cl5',text:'Post No Trespassing signs immediately after closing'},
+    ]},
+  ]},
+  {id:'p1b',tag:'PHASE 1B',title:'Permits & Approvals',subtitle:'Run parallel to acquisition',sections:[
+    {id:'p1bs0',title:'SPECIAL USE PERMIT',gate:false,items:[
+      {id:'sup1',text:'Engage NY land use attorney — Ulster County Planning Board experience',note:'Budget $8,000–$20,000'},
+      {id:'sup2',text:'Pre-application meeting with Town of Rochester Planning Board',note:'Free; present cabin colony concept before formal filing'},
+      {id:'sup3',text:'Attorney drafts SUP application'},
+      {id:'sup4',text:'Commission site plan from licensed engineer or architect',note:'$5,000–$12,000; cabins, setbacks, utilities, stream buffer'},
+      {id:'sup5',text:'Prepare SEQR Short Environmental Assessment Form'},
+      {id:'sup6',text:'Submit SUP application to Town of Rochester Planning Board'},
+      {id:'sup7',text:'Respond to Ulster County Planning Board referral (GML 239)',note:'30-day review if within 500ft of county road/boundary'},
+      {id:'sup8',text:'Attend public hearing — site plan, renderings, impact narrative'},
+      {id:'sup9',text:'Respond to Planning Board conditions of approval'},
+      {id:'sup10',text:'Receive Special Use Permit — record with Ulster County Clerk'},
+    ]},
+    {id:'p1bs1',title:'NYSDOH PERMIT (SUBPART 7-1)',gate:false,items:[
+      {id:'doh1',text:'Pre-application meeting with Ulster County Health Dept (NYSDOH)'},
+      {id:'doh2',text:'Submit water supply plan (well, UV system, pressure tank sizing)'},
+      {id:'doh3',text:'Submit sewage disposal plan — engineer-stamped, cabin colony demand'},
+      {id:'doh4',text:'Submit site plan showing occupancy unit layout and access'},
+      {id:'doh5',text:'Pay NYSDOH permit application fee'},
+      {id:'doh6',text:'NYSDOH field inspection'},
+      {id:'doh7',text:'Receive Permit to Operate Temporary Residence (valid up to 3 years)'},
+    ]},
+    {id:'p1bs2',title:'STR & TAX REGISTRATION',gate:false,items:[
+      {id:'sr1',text:'Confirm: cabin colony requires separate STR registration?',note:'This determines if permit cap applies'},
+      {id:'sr2',text:'If required: Apply for Town of Rochester STR permit'},
+      {id:'sr3',text:'Register Ulster County Certificate of Authority — 4% occupancy tax'},
+      {id:'sr4',text:'Register with NY State DTF for sales tax vendor account (Form DTF-17)'},
+      {id:'sr5',text:'Confirm Airbnb/VRBO collect 4% NY sales tax automatically (post Mar 2025)'},
+    ]},
+    {id:'p1bs3',title:'BUILDING PERMITS',gate:false,items:[
+      {id:'bp1',text:'Building permits — both 1BR cabins (Town of Rochester Building Dept)'},
+      {id:'bp2',text:'Well installation permit — Ulster County Health Dept'},
+      {id:'bp3',text:'Septic system permit — Ulster County Health Dept'},
+      {id:'bp4',text:'Electrical permit — service entrance and cabin wiring'},
+      {id:'bp5',text:'Stormwater permit if disturbance over 1 acre (NYSDEC GP-0-15-002)'},
+      {id:'bp6',text:'NYSDEC Article 15 permit if work within 100ft of regulated stream'},
+      {id:'bp7',text:'Driveway permit for Rt 44/55 access — NYSDOT Highway Work Permit'},
+    ]},
+  ]},
+  {id:'p1c',tag:'PHASE 1C',title:'Site Work & Construction',subtitle:'Sequential — utilities before cabin placement',sections:[
+    {id:'p1cs0',title:'UTILITY INFRASTRUCTURE — TRENCH ONCE',gate:false,items:[
+      {id:'ut1',text:'Drill and case primary well',note:'Target 5+ GPM; $12,000–$20,000; include UV disinfection'},
+      {id:'ut2',text:'Well water quality test baseline (bacteria, nitrates, pH, hardness)'},
+      {id:'ut3',text:'Install pressure tank and distribution manifold sized for full buildout'},
+      {id:'ut4',text:'Install UV disinfection or chlorination system (NYSDOH requirement)'},
+      {id:'ut5',text:'Install septic system — sized for both cabins, stub for future expansion'},
+      {id:'ut6',text:'Install electrical service entrance from road',note:'200A minimum, 400A preferred; size for Phases 1–3'},
+      {id:'ut7',text:'Trench once: water, electric, comms conduit to all Phase 1 and Phase 2 stub locations'},
+      {id:'ut8',text:'Grade and gravel primary access road to cabin sites'},
+      {id:'ut9',text:'Install culverts at stream crossings (NYSDEC Article 15)'},
+    ]},
+    {id:'p1cs1',title:'FOUNDATIONS & CABIN INSTALLATION',gate:false,items:[
+      {id:'cb1',text:'Confirm Zook Cabins 1BR A-frame footprint under 500 sq ft',note:'Verify with Zook; if over 500 sq ft notify attorney'},
+      {id:'cb2',text:'Stake cabin locations per approved site plan'},
+      {id:'cb3',text:'Excavate and pour foundations per engineer specs'},
+      {id:'cb4',text:'Foundation inspection before framing'},
+      {id:'cb5',text:'Order Zook Cabins A-frame units',note:'Lead time 8–16 weeks; insulated, radiant-ready LVP, black windows'},
+      {id:'cb6',text:'Coordinate delivery and crane placement'},
+      {id:'cb7',text:'Connect water, septic, and electrical to each cabin'},
+      {id:'cb8',text:'Install mini-split HVAC in each cabin'},
+      {id:'cb9',text:'Final building inspection — Certificate of Occupancy for each cabin'},
+    ]},
+    {id:'p1cs2',title:'OUTDOOR AMENITIES',gate:false,items:[
+      {id:'am1',text:'Install hot tub and 240V GFCI-protected electrical per cabin'},
+      {id:'am2',text:'Install fire pit with gravel pad and seating per cabin'},
+      {id:'am3',text:'Clear and mark trail to stream and swimming holes',note:'Maintain NYSDEC 100-ft buffer'},
+      {id:'am4',text:'Install cabin signage, wayfinding, and parking area'},
+      {id:'am5',text:'Install dark-sky compliant exterior lighting'},
+      {id:'am6',text:'Install smart locks on all cabin doors'},
+      {id:'am7',text:'Year 2: Begin lot split application for separate parcel',note:'$3,000–$8,000; 3–6 months; before any personal use'},
+    ]},
+  ]},
+  {id:'p1d',tag:'PHASE 1D',title:'STR Setup & Launch',subtitle:'Final steps before first guest',sections:[
+    {id:'p1ds0',title:'INSURANCE',gate:false,items:[
+      {id:'in1',text:'Commercial general liability — min $1M per occurrence, $2M aggregate'},
+      {id:'in2',text:'STR-specific endorsement or stand-alone policy for each cabin',note:'Standard homeowner policies exclude STR'},
+      {id:'in3',text:'Builder\'s risk policy during construction'},
+      {id:'in4',text:'NFIP flood insurance if FEMA flood zone applies'},
+    ]},
+    {id:'p1ds1',title:'TAX SETUP',gate:false,items:[
+      {id:'tx1',text:'Engage CPA with STR/real estate experience — before first booking'},
+      {id:'tx2',text:'Establish time-tracking system for material participation — start Day 1',note:'100+ hours AND more than any single other person; contemporaneous records required'},
+      {id:'tx3',text:'Order cost segregation study immediately after cabins placed in service',note:'$3,500–$5,000; Year 1 federal savings ~$13,000–$15,000 per cabin at 35% bracket'},
+      {id:'tx4',text:'Set up QuickBooks or equivalent for OpCo LLC'},
+      {id:'tx5',text:'Open capital reserve account — 1% of cabin value annually'},
+    ]},
+    {id:'p1ds2',title:'LISTING & OPERATIONS',gate:false,items:[
+      {id:'ls1',text:'Professional photography — exterior, interior, stream, trails'},
+      {id:'ls2',text:'Draft Airbnb and VRBO listings',note:'Lead with private stream and swimming holes'},
+      {id:'ls3',text:'Set pricing: $225–$275 baseline, $300+ peak, 10–15% weekly discount'},
+      {id:'ls4',text:'Set minimum stay: 2 nights weekends, 3 nights peak season'},
+      {id:'ls5',text:'Configure smart lock codes (unique per booking, auto-expire)'},
+      {id:'ls6',text:'Create guest welcome book (trail map, stream rules, emergency contacts)'},
+      {id:'ls7',text:'Contract cleaning crew',note:'Crew hours must not exceed your logged hours — co-host preferred'},
+      {id:'ls8',text:'Create house rules (quiet hours, fire pit, stream safety, pets)'},
+      {id:'ls9',text:'List on Airbnb and VRBO with channel manager'},
+      {id:'ls10',text:'Soft launch: 2–4 bookings at 10–15% below target rate for reviews'},
+    ]},
+  ]},
+  {id:'p1e',tag:'PHASE 1E',title:'Ongoing Operations',subtitle:'Year 1 and beyond',sections:[
+    {id:'p1es0',title:'REGULATORY RENEWALS',gate:false,items:[
+      {id:'re1',text:'NYSDOH Temporary Residence permit renewal (every 1–3 years)'},
+      {id:'re2',text:'Annual NYSDOH water quality testing',note:'~$800–$1,500/year; quarterly micro + annual nitrate'},
+      {id:'re3',text:'Town of Rochester STR permit renewal (if applicable) — annual'},
+      {id:'re4',text:'Ulster County Certificate of Authority renewal'},
+      {id:'re5',text:'Business insurance annual renewal'},
+    ]},
+    {id:'p1es1',title:'FINANCIAL & TAX — ANNUAL',gate:false,items:[
+      {id:'ft1',text:'File NY nonresident income tax return (IT-203) — NY-source STR income'},
+      {id:'ft2',text:'File PA state income tax — claim credit for NY tax paid on same income'},
+      {id:'ft3',text:'Remit Ulster County 4% occupancy tax — quarterly'},
+      {id:'ft4',text:'Federal Schedule E for rental income/loss from both cabins'},
+      {id:'ft5',text:'Document material participation hours — every month, every year',note:'100+ hours AND more than any single other person; log contemporaneously'},
+      {id:'ft6',text:'Year 2: Begin lot split process for separate STR parcel'},
+      {id:'ft7',text:'Year 3: Model recapture tax and conversion options with CPA'},
+    ]},
+  ]},
+];
+
+// ──────────────────────────────────────────────────────────────────────────────
+// STATE
+// ──────────────────────────────────────────────────────────────────────────────
+let S = {
+  checked:{}, itemNotes:{}, itemHints:{}, customTasks:{}, subSteps:{}, itemOrder:{},
+  taskContacts:{}, workLog:[], contacts:[], notes:[],
+  ckFilter:'all', logFilter:'all', ccFilter:'all', ntFilter:'all'
+};
+
+// Default contacts pre-associated with specific built-in tasks
+const TASK_DEFAULT_CONTACTS = {
+  'g1a':{name:'Keith Roosa',org:'Town of Rochester Code Enforcement',cat:'Government',phone:'(845) 626-2433 Ext. 2',email:'ceo@townofrochester.ny.gov',link:''},
+  'g1b':{name:'Keith Roosa',org:'Town of Rochester Code Enforcement',cat:'Government',phone:'(845) 626-2433 Ext. 2',email:'ceo@townofrochester.ny.gov',link:''},
+  'g1c':{name:'Keith Roosa',org:'Town of Rochester Code Enforcement',cat:'Government',phone:'(845) 626-2433 Ext. 2',email:'ceo@townofrochester.ny.gov',link:''},
+  'g1d':{name:'Keith Roosa',org:'Town of Rochester Code Enforcement',cat:'Government',phone:'(845) 626-2433 Ext. 2',email:'ceo@townofrochester.ny.gov',link:''},
+  'g1e':{name:'Keith Roosa',org:'Town of Rochester Code Enforcement',cat:'Government',phone:'(845) 626-2433 Ext. 2',email:'ceo@townofrochester.ny.gov',link:''},
+  'g1f':{name:'Ulster County Health Dept',org:'NYSDOH Permit Issuing Official',cat:'Government',phone:'',email:'',link:'https://ulstercountyny.gov'},
+  'g1g':{name:'FEMA Map Service Center',org:'Federal Emergency Management Agency',cat:'Government',phone:'',email:'',link:'https://msc.fema.gov'},
+  'g1h':{name:'NYSDEC Region 3',org:'NY Dept of Environmental Conservation',cat:'Government',phone:'(845) 256-3000',email:'',link:''},
+  'g2a':{name:'',org:'NY Real Property Attorney',cat:'Legal',phone:'',email:'',link:''},
+  'g2h':{name:'',org:'Licensed NY Land Surveyor',cat:'Professional',phone:'',email:'',link:''},
+  'g2l':{name:'',org:'Title Company',cat:'Legal',phone:'',email:'',link:''},
+  'g3a':{name:'',org:'Licensed PE — Septic Engineer',cat:'Professional',phone:'',email:'',link:''},
+  'fn1':{name:'SBA VOSB Certification',org:'Small Business Administration',cat:'Government',phone:'',email:'',link:'https://vetcert.sba.gov'},
+  'fn2':{name:'Pursuit Lending CDC',org:'SBA 504 Primary',cat:'Finance',phone:'(212) 868-6700',email:'',link:''},
+  'fn3':{name:'Empire State CDC',org:'SBA 504 Backup',cat:'Finance',phone:'(518) 463-2268',email:'',link:''},
+  'sup1':{name:'',org:'NY Land Use Attorney — Ulster County',cat:'Legal',phone:'',email:'',link:''},
+  'doh1':{name:'Ulster County Health Dept',org:'NYSDOH Permit Issuing Official',cat:'Government',phone:'',email:'',link:'https://ulstercountyny.gov'},
+  'tx1':{name:'',org:'CPA — STR/Real Estate Specialist',cat:'Professional',phone:'',email:'',link:''},
+  'cb5':{name:'Zook Cabins',org:'Cabin Manufacturer',cat:'Construction',phone:'',email:'',link:'https://zookscabins.com'},
+  'ut1':{name:'',org:'Licensed Well Driller',cat:'Construction',phone:'',email:'',link:''},
+  'am1':{name:'',org:'Hot Tub / Electrician',cat:'Construction',phone:'',email:'',link:''},
+};
+
+// editing state
+let editTaskId=null, editSectionId=null, editCCId=null, editNoteId=null, editLogId=null;
+let logTaskContext=null; // {id, text, phaseTag} when opened from a task
+
+const DEFAULT_CONTACTS=[
+  {id:'dc1',name:'Keith Roosa',org:'Town of Rochester Code Enforcement',cat:'Government',phone:'(845) 626-2433 Ext. 2',email:'ceo@townofrochester.ny.gov',link:'',notes:'FIRST CALL — Confirm cabin colony zoning in Res-1. Is STR cap applicable to NYSDOH-permitted cabin colony on raw land?'},
+  {id:'dc2',name:'Pursuit Lending CDC',org:'SBA 504 Primary',cat:'Finance',phone:'(212) 868-6700',email:'',link:'',notes:'SBA 504 Veterans Advantage pathway. NAICS 721199. VOSB certification required first.'},
+  {id:'dc3',name:'Empire State CDC',org:'SBA 504 Backup',cat:'Finance',phone:'(518) 463-2268',email:'',link:'',notes:'Backup CDC if Pursuit Lending does not work out.'},
+  {id:'dc4',name:'NYSDEC Region 3',org:'NY Dept of Environmental Conservation',cat:'Government',phone:'(845) 256-3000',email:'',link:'',notes:'Stream Article 15 determination. Any work within 100ft of regulated stream requires permit.'},
+  {id:'dc5',name:'Ulster County Health Dept',org:'NYSDOH Permit Issuing Official',cat:'Government',phone:'',email:'',link:'https://ulstercountyny.gov',notes:'NYSDOH Subpart 7-1 Temporary Residence permit. Pre-application consultation first.'},
+];
+
+// ──────────────────────────────────────────────────────────────────────────────
+// STORAGE
+// ──────────────────────────────────────────────────────────────────────────────
+function saveAll(){
+  try{localStorage.setItem('ll2_state',JSON.stringify(S));}catch(e){}
+}
+function loadAll(){
+  try{
+    const d=localStorage.getItem('ll2_state');
+    if(d){const p=JSON.parse(d);S={...S,...p};}
+    else{S.contacts=[...DEFAULT_CONTACTS];}
+    if(!S.contacts||S.contacts.length===0)S.contacts=[...DEFAULT_CONTACTS];
+    if(!S.taskContacts)S.taskContacts={};
+    if(!S.notes)S.notes=[];
+    if(!S.customTasks)S.customTasks={};
+    if(!S.subSteps)S.subSteps={};
+    if(!S.itemOrder)S.itemOrder={};
+    if(!S.itemHints)S.itemHints={};
+  }catch(e){S.contacts=[...DEFAULT_CONTACTS];}
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// HELPERS
+// ──────────────────────────────────────────────────────────────────────────────
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function today(){return new Date().toISOString().slice(0,10);}
+function fmtDate(d){if(!d)return'';try{const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}catch(e){return d;}}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openModal(id){document.getElementById(id).classList.add('open');}
+
+// Get all items (built-in + custom) for a section
+function getSectionItems(phaseId, secId){
+  const ph=PHASES.find(p=>p.id===phaseId);
+  const sec=ph?.sections.find(s=>s.id===secId);
+  const base=(sec?.items||[]).map(i=>({...i,_builtin:true}));
+  const custom=(S.customTasks[secId]||[]).map(i=>({...i,_builtin:false}));
+  const all=[...base,...custom];
+  const order=S.itemOrder[secId];
+  if(!order)return all;
+  const indexed=Object.fromEntries(all.map(i=>[i.id,i]));
+  const ordered=order.map(id=>indexed[id]).filter(Boolean);
+  const remaining=all.filter(i=>!order.includes(i.id));
+  return [...ordered,...remaining];
+}
+
+function moveItem(secId,itemId,dir){
+  const ph=PHASES.find(p=>p.sections.some(s=>s.id===secId));
+  if(!ph)return;
+  const items=getSectionItems(ph.id,secId);
+  const ids=items.map(i=>i.id);
+  const idx=ids.indexOf(itemId);
+  if(idx===-1)return;
+  const swapIdx=idx+dir;
+  if(swapIdx<0||swapIdx>=ids.length)return;
+  [ids[idx],ids[swapIdx]]=[ids[swapIdx],ids[idx]];
+  S.itemOrder[secId]=ids;
+  saveAll();renderChecklist();
+}
+
+// Get item text (may be overridden)
+function getItemText(item){
+  return (S.itemNotes[item.id+'__text'])||item.text;
+}
+function getItemHint(item){
+  return (S.itemHints[item.id]!==undefined?S.itemHints[item.id]:item.note)||'';
+}
+function getUserNote(item){
+  return S.itemNotes[item.id]||'';
+}
+
+// Hours for a task
+function taskHours(itemId){
+  return S.workLog.filter(e=>e.taskId===itemId).reduce((a,e)=>a+(+e.hours||0),0);
+}
+
+// Total hours
+function totalHours(){
+  return S.workLog.reduce((a,e)=>a+(+e.hours||0),0);
+}
+
+// Find item by id across all phases
+function findItem(id){
+  for(const ph of PHASES){
+    for(const sec of ph.sections){
+      const found=sec.items.find(i=>i.id===id);
+      if(found)return{item:found,phase:ph,section:sec};
+      const cf=(S.customTasks[sec.id]||[]).find(i=>i.id===id);
+      if(cf)return{item:cf,phase:ph,section:sec};
+    }
+  }
+  return null;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// TABS
+// ──────────────────────────────────────────────────────────────────────────────
+function switchTab(tab,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  btn.classList.add('active');
+  if(tab==='checklist')renderChecklist();
+  if(tab==='hours')renderLog();
+  if(tab==='contacts')renderContacts();
+  if(tab==='notes')renderNotes();
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// CHECKLIST
+// ──────────────────────────────────────────────────────────────────────────────
+function setFilter(f,el){
+  S.ckFilter=f;
+  document.querySelectorAll('#fa,#fo,#fd').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderChecklist();
+}
+
+function renderChecklist(){
+  const q=(document.getElementById('ckSearch').value||'').toLowerCase();
+  const cont=document.getElementById('ckContainer');
+  let html='',totalD=0,totalA=0;
+
+  PHASES.forEach(ph=>{
+    let phD=0,phA=0,phHtml='';
+    ph.sections.forEach(sec=>{
+      const items=getSectionItems(ph.id,sec.id);
+      let secHtml='';
+      items.forEach(item=>{
+        const isDone=!!S.checked[item.id];
+        if(S.ckFilter==='open'&&isDone)return;
+        if(S.ckFilter==='done'&&!isDone)return;
+        const txt=getItemText(item);
+        const hint=getItemHint(item);
+        const unote=getUserNote(item);
+        const tc=S.taskContacts[item.id]||null;
+        if(q&&!txt.toLowerCase().includes(q)&&!hint.toLowerCase().includes(q)&&!unote.toLowerCase().includes(q)&&!(tc&&(tc.name||'').toLowerCase().includes(q)))return;
+        phA++;totalA++;
+        if(isDone){phD++;totalD++;}
+        const hrs=taskHours(item.id);
+        const isGate=sec.gate||item.gate;
+        const subs=S.subSteps[item.id]||[];
+        const subHtml=subs.length?`<div class="substep-list">${subs.map(ss=>`
+          <div class="substep${S.checked[item.id+'_ss_'+ss.id]?' done':''}" id="ss_${item.id}_${ss.id}">
+            <div class="ss-cb" onclick="toggleSubStep('${item.id}','${ss.id}')">${S.checked[item.id+'_ss_'+ss.id]?'&#10003;':''}</div>
+            <div class="ss-text" onclick="toggleSubStep('${item.id}','${ss.id}')">${esc(ss.text)}</div>
+            <button class="ss-edit-btn" onclick="editSubStep('${item.id}','${ss.id}',event)" title="Edit">&#9998;</button>
+            <button class="ss-del" onclick="delSubStep('${item.id}','${ss.id}',event)" title="Delete">&#215;</button>
+          </div>`).join('')}</div>`:'';
+        const contactHtml=tc?`<div class="ci-contact">
+          <div class="ci-contact-icon">&#9743;</div>
+          <div class="ci-contact-body">
+            <span class="ci-contact-name">${esc(tc.name||tc.org||'')}</span>
+            ${tc.org&&tc.name?`<span class="ci-contact-sep">&mdash;</span><span class="ci-contact-org">${esc(tc.org)}</span>`:''}
+            ${tc.phone?`<span class="ci-contact-phone">&#128222; ${esc(tc.phone)}</span>`:''}
+          </div>
+          <button class="ia" style="width:20px;height:20px;font-size:10px;flex-shrink:0;" onclick="openTaskNote('${item.id}','${sec.id}',${item._builtin===false})" title="Edit contact">&#9998;</button>
+        </div>`:'';
+        secHtml+=`<div class="ci${isDone?' done':''}${isGate?' gate-item':''}" id="ci_${item.id}">
+          <div class="ci-move">
+            <button class="ia-move" onclick="moveItem('${sec.id}','${item.id}',-1)" title="Move up">&#9650;</button>
+            <button class="ia-move" onclick="moveItem('${sec.id}','${item.id}',1)" title="Move down">&#9660;</button>
+          </div>
+          <div class="cb" onclick="toggleCheck('${item.id}')" title="Toggle complete">
+            <span class="ck">&#10003;</span>
+          </div>
+          <div class="ci-body" style="flex:1;min-width:0;">
+            <div onclick="toggleCheck('${item.id}')" style="cursor:pointer;">
+              ${isGate?'<div class="gate-lbl">GATE ITEM</div>':''}
+              <div class="ci-text">${esc(txt)}</div>
+              ${hint?`<div class="ci-note">${esc(hint)}</div>`:''}
+              ${unote?`<div class="ci-usernote">${esc(unote)}</div>`:''}
+              ${hrs>0?`<div class="ci-hours">${hrs.toFixed(2)} hrs logged</div>`:''}
+            </div>
+            ${contactHtml}
+            ${subHtml}
+            <div class="add-substep-row" id="asr_${item.id}">
+              <input class="add-substep-inp" id="asi_${item.id}" placeholder="New sub-step..." onkeydown="ssKeydown('${item.id}',event)">
+              <button class="add-substep-btn" onclick="toggleSubInput('${item.id}',event)">+ sub-step</button>
+            </div>
+          </div>
+          <div class="ci-actions">
+            <button class="ia${unote?' has-note':''}" onclick="openTaskNote('${item.id}','${sec.id}',${item._builtin===false})" title="Edit note / task">&#9998;</button>
+            <button class="ia${hrs>0?' has-log':''}" onclick="logTask('${item.id}')" title="Log time to this task">&#9201;</button>
+          </div>
+        </div>`
+      });
+      if(secHtml||!q){
+        phHtml+=`<div class="sec-hdr">
+          <div class="sec-title">${esc(sec.title)}</div>
+          <button class="add-task-btn" onclick="openAddTask('${ph.id}','${sec.id}',event)">+ TASK</button>
+        </div>${secHtml||'<div style="padding:6px 10px;font-family:var(--mono);font-size:11px;color:var(--text-dim);">No matching tasks</div>'}`;
+      }
+    });
+    if(phHtml){
+      const pct=phA>0?Math.round(phD/phA*100):0;
+      html+=`<div class="phase-hdr" onclick="togglePhase('pb_${ph.id}',this)">
+        <div class="phase-tag">${ph.tag}</div>
+        <div class="phase-title">${ph.title}</div>
+        <div class="phase-prog">${phD}/${phA} &nbsp;${pct}%</div>
+        <div class="phase-arrow">&#9660;</div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <div class="phase-line"></div>
+      <div class="phase-body" id="pb_${ph.id}">${phHtml}</div>`;
+    }
+  });
+
+  if(!html)html='<div class="empty">NO TASKS MATCH CURRENT FILTER</div>';
+  cont.innerHTML=html;
+  updateStats(totalD,totalA);
+}
+
+function toggleCheck(id){
+  S.checked[id]=!S.checked[id];
+  saveAll();renderChecklist();
+}
+
+function togglePhase(bodyId,hdrEl){
+  const b=document.getElementById(bodyId);
+  if(!b)return;
+  b.classList.toggle('col');
+  hdrEl.classList.toggle('col');
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// TASK NOTE MODAL
+// ──────────────────────────────────────────────────────────────────────────────
+// Safe wrapper for log modal — avoids inline JSON in onclick attrs
+function logTask(itemId){
+  const found=findItem(itemId);
+  const txt=found?getItemText(found.item):'Task';
+  const phTag=found?.phase?.tag||'';
+  openLogModal({id:itemId,text:txt,phaseTag:phTag});
+}
+
+function logContact(contactId){
+  const c=S.contacts.find(x=>x.id===contactId);
+  if(!c)return;
+  openLogModal({id:'cc_'+contactId,text:c.name+(c.org?' — '+c.org:''),phaseTag:'Contact'});
+}
+
+function openTaskNote(itemId,secId,isCustom){
+  editTaskId=itemId;
+  const found=findItem(itemId);
+  const item=found?.item||{id:itemId,text:'',note:''};
+  document.getElementById('tnTaskRef').textContent=(found?.phase?.tag||'')+(found?.section?.title?' — '+found.section.title:'');
+  document.getElementById('tnText').value=getItemText(item);
+  document.getElementById('tnHint').value=getItemHint(item);
+  document.getElementById('tnNote').value=getUserNote(item);
+  // Contact fields — load saved or default
+  const saved=S.taskContacts[itemId]||TASK_DEFAULT_CONTACTS[itemId]||{};
+  document.getElementById('tnCName').value=saved.name||'';
+  document.getElementById('tnCOrg').value=saved.org||'';
+  document.getElementById('tnCPhone').value=saved.phone||'';
+  document.getElementById('tnCEmail').value=saved.email||'';
+  document.getElementById('tnCLink').value=saved.link||'';
+  document.getElementById('tnCCat').value=saved.cat||'';
+  document.getElementById('tnCSave').checked=!!(saved.name&&!S.taskContacts[itemId]);
+  document.getElementById('tnDelBtn').style.display=isCustom?'inline-block':'none';
+  document.getElementById('tnDelBtn').setAttribute('data-secid',secId||'');
+  openModal('moTaskNote');
+}
+
+function saveTaskNote(){
+  const id=editTaskId;
+  const txt=document.getElementById('tnText').value.trim();
+  const hint=document.getElementById('tnHint').value.trim();
+  const note=document.getElementById('tnNote').value.trim();
+  const found=findItem(id);
+  // Text override
+  if(found&&txt&&txt!==found.item.text){S.itemNotes[id+'__text']=txt;}
+  else{delete S.itemNotes[id+'__text'];}
+  S.itemHints[id]=hint;
+  if(note){S.itemNotes[id]=note;}else{delete S.itemNotes[id];}
+  // Contact
+  const cname=document.getElementById('tnCName').value.trim();
+  const corg=document.getElementById('tnCOrg').value.trim();
+  const cphone=document.getElementById('tnCPhone').value.trim();
+  const cemail=document.getElementById('tnCEmail').value.trim();
+  const clink=document.getElementById('tnCLink').value.trim();
+  const ccat=document.getElementById('tnCCat').value;
+  if(cname||corg||cphone||cemail){
+    S.taskContacts[id]={name:cname,org:corg,phone:cphone,email:cemail,link:clink,cat:ccat||'Other'};
+    if(document.getElementById('tnCSave').checked){
+      saveContactFromTask(id,S.taskContacts[id],getItemText(found?.item||{id,text:txt||id}));
+    }
+  } else {
+    delete S.taskContacts[id];
+  }
+  saveAll();closeModal('moTaskNote');renderChecklist();
+}
+
+function deleteCustomTask(){
+  const secId=document.getElementById('tnDelBtn').getAttribute('data-secid');
+  if(!secId||!editTaskId)return;
+  if(!confirm('Delete this custom task?'))return;
+  S.customTasks[secId]=(S.customTasks[secId]||[]).filter(t=>t.id!==editTaskId);
+  delete S.checked[editTaskId];
+  delete S.itemNotes[editTaskId];
+  delete S.itemNotes[editTaskId+'__text'];
+  delete S.itemHints[editTaskId];
+  saveAll();closeModal('moTaskNote');renderChecklist();
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// ADD TASK MODAL
+// ──────────────────────────────────────────────────────────────────────────────
+function openAddTask(phaseId,secId,ev){
+  ev.stopPropagation();
+  editSectionId=secId;
+  const ph=PHASES.find(p=>p.id===phaseId);
+  const sec=ph?.sections.find(s=>s.id===secId);
+  document.getElementById('atSectionRef').textContent=(ph?.tag||'')+' — '+(sec?.title||secId);
+  document.getElementById('atText').value='';
+  document.getElementById('atNote').value='';
+  document.getElementById('atGate').value='0';
+  ['atCName','atCOrg','atCPhone','atCEmail','atCLink'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('atCCat').value='';
+  document.getElementById('atCSave').checked=false;
+  openModal('moAddTask');
+  setTimeout(()=>document.getElementById('atText').focus(),100);
+}
+
+// Helper: push a contact into contacts section, linked to a task
+function saveContactFromTask(taskId,contactData,taskText){
+  if(!contactData.name&&!contactData.org)return;
+  // Check if contact already exists for this task
+  const existing=S.contacts.find(c=>c._taskId===taskId);
+  const noteStr='[Task] '+taskText;
+  const entry={
+    id:existing?existing.id:('tc_'+taskId),
+    name:contactData.name||contactData.org||'Unknown',
+    org:contactData.org||'',
+    cat:contactData.cat||'Other',
+    phone:contactData.phone||'',
+    email:contactData.email||'',
+    link:contactData.link||'',
+    notes:noteStr,
+    _taskId:taskId
+  };
+  if(existing){const i=S.contacts.findIndex(c=>c.id===existing.id);if(i>=0)S.contacts[i]=entry;}
+  else S.contacts.push(entry);
+}
+
+function saveNewTask(){
+  const txt=document.getElementById('atText').value.trim();
+  if(!txt)return;
+  const note=document.getElementById('atNote').value.trim();
+  const gate=document.getElementById('atGate').value==='1';
+  const id='ct_'+Date.now();
+  if(!S.customTasks[editSectionId])S.customTasks[editSectionId]=[];
+  S.customTasks[editSectionId].push({id,text:txt,note,gate,_builtin:false});
+  // Contact
+  const cname=document.getElementById('atCName').value.trim();
+  const corg=document.getElementById('atCOrg').value.trim();
+  const cphone=document.getElementById('atCPhone').value.trim();
+  const cemail=document.getElementById('atCEmail').value.trim();
+  const clink=document.getElementById('atCLink').value.trim();
+  const ccat=document.getElementById('atCCat').value;
+  if(cname||corg||cphone||cemail){
+    const cd={name:cname,org:corg,phone:cphone,email:cemail,link:clink,cat:ccat||'Other'};
+    S.taskContacts[id]=cd;
+    if(document.getElementById('atCSave').checked){
+      saveContactFromTask(id,cd,txt);
+    }
+  }
+  saveAll();closeModal('moAddTask');renderChecklist();
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// HOURS LOG
+// ──────────────────────────────────────────────────────────────────────────────
+function setLogFilter(f,el){
+  S.logFilter=f;
+  document.querySelectorAll('#lfa,#lfp').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderLog();
+}
+
+function openLogModal(taskCtx){
+  logTaskContext=taskCtx;
+  editLogId=null;
+  const ref=document.getElementById('logTaskRef');
+  if(taskCtx){
+    ref.style.display='block';
+    ref.textContent=(taskCtx.phaseTag?' ['+taskCtx.phaseTag+'] ':'')+taskCtx.text;
+    document.getElementById('lgTaskLabel').value=taskCtx.text;
+  } else {
+    ref.style.display='none';
+    document.getElementById('lgTaskLabel').value='';
+  }
+  document.getElementById('lgDate').value=today();
+  document.getElementById('lgHours').value='';
+  document.getElementById('lgLoc').value='';
+  document.getElementById('lgType').value='Research / Review';
+  document.getElementById('lgDesc').value='';
+  openModal('moLog');
+  setTimeout(()=>document.getElementById('lgHours').focus(),100);
+}
+
+function editLogEntry(id){
+  const e=S.workLog.find(x=>x.id===id);
+  if(!e)return;
+  editLogId=id;
+  logTaskContext=null;
+  const ref=document.getElementById('logTaskRef');
+  if(e.taskId){ref.style.display='block';ref.textContent=e.taskText||e.taskId;}
+  else{ref.style.display='none';}
+  document.getElementById('lgDate').value=e.date||today();
+  document.getElementById('lgHours').value=e.hours||'';
+  document.getElementById('lgLoc').value=e.location||'';
+  document.getElementById('lgType').value=e.workType||'Other';
+  document.getElementById('lgTaskLabel').value=e.taskText||'';
+  document.getElementById('lgDesc').value=e.description||'';
+  openModal('moLog');
+}
+
+function saveLogEntry(){
+  const hrs=parseFloat(document.getElementById('lgHours').value);
+  if(!hrs||hrs<=0){alert('Please enter hours greater than 0');return;}
+  const entry={
+    id:editLogId||('log_'+Date.now()),
+    date:document.getElementById('lgDate').value,
+    hours:hrs,
+    location:document.getElementById('lgLoc').value.trim(),
+    workType:document.getElementById('lgType').value,
+    taskId:logTaskContext?.id||null,
+    taskText:document.getElementById('lgTaskLabel').value.trim()||logTaskContext?.text||null,
+    phaseTag:logTaskContext?.phaseTag||null,
+    description:document.getElementById('lgDesc').value.trim(),
+  };
+  if(editLogId){
+    const idx=S.workLog.findIndex(x=>x.id===editLogId);
+    if(idx>=0)S.workLog[idx]=entry;
+  } else {
+    S.workLog.unshift(entry);
+  }
+  saveAll();closeModal('moLog');renderLog();renderChecklist();updateStats();
+}
+
+function deleteLogEntry(id){
+  if(!confirm('Delete this log entry?'))return;
+  S.workLog=S.workLog.filter(x=>x.id!==id);
+  saveAll();renderLog();renderChecklist();updateStats();
+}
+
+function renderLog(){
+  const q=(document.getElementById('logSearch')?.value||'').toLowerCase();
+  const cont=document.getElementById('logContainer');
+
+  let entries=[...S.workLog].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(q)entries=entries.filter(e=>(e.description||'').toLowerCase().includes(q)||(e.location||'').toLowerCase().includes(q)||(e.taskText||'').toLowerCase().includes(q)||(e.workType||'').toLowerCase().includes(q));
+
+  // Summary cards
+  const tot=S.workLog.reduce((a,e)=>a+(+e.hours||0),0);
+  const onsite=S.workLog.filter(e=>(e.location||'').toLowerCase().includes('on-site')||e.workType==='On-site inspection').reduce((a,e)=>a+(+e.hours||0),0);
+  const phone=S.workLog.filter(e=>e.workType==='Phone call').reduce((a,e)=>a+(+e.hours||0),0);
+  const taskCount=new Set(S.workLog.filter(e=>e.taskId).map(e=>e.taskId)).size;
+  document.getElementById('logSummary').innerHTML=`
+    <div class="ls-card"><div class="ls-num">${tot.toFixed(1)}</div><div class="ls-lbl">Total Hours</div></div>
+    <div class="ls-card"><div class="ls-num">${onsite.toFixed(1)}</div><div class="ls-lbl">On-Site Hours</div></div>
+    <div class="ls-card"><div class="ls-num">${phone.toFixed(1)}</div><div class="ls-lbl">Phone Hours</div></div>
+    <div class="ls-card"><div class="ls-num">${S.workLog.length}</div><div class="ls-lbl">Log Entries</div></div>
+    <div class="ls-card"><div class="ls-num">${taskCount}</div><div class="ls-lbl">Tasks Logged</div></div>
+  `;
+
+  if(!entries.length){cont.innerHTML='<div class="empty">NO LOG ENTRIES YET — USE &#9201; ON ANY TASK OR "+ LOG TIME" ABOVE</div>';return;}
+
+  // Group by phase if filter=phase
+  if(S.logFilter==='phase'){
+    const groups={};
+    entries.forEach(e=>{const k=e.phaseTag||'General';if(!groups[k])groups[k]=[];groups[k].push(e);});
+    cont.innerHTML=Object.entries(groups).map(([tag,ents])=>{
+      const gHrs=ents.reduce((a,e)=>a+(+e.hours||0),0);
+      return `<div style="margin-bottom:20px;">
+        <div style="font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:2px;color:var(--accent2);border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:8px;">${esc(tag)} <span style="color:var(--text-dim);font-size:12px;">${gHrs.toFixed(1)} hrs</span></div>
+        ${ents.map(e=>logEntryHtml(e)).join('')}
+      </div>`;
+    }).join('');
+  } else {
+    cont.innerHTML=entries.map(e=>logEntryHtml(e)).join('');
+  }
+}
+
+function logEntryHtml(e){
+  return `<div class="log-entry">
+    <div class="le-date">${fmtDate(e.date)}</div>
+    <div class="le-body">
+      ${e.taskText?`<div class="le-task">${esc(e.phaseTag?'['+e.phaseTag+'] ':'')}${esc(e.taskText)}</div>`:'<div class="le-task">— General</div>'}
+      ${e.location?`<div class="le-loc">&#9679; ${esc(e.location)}</div>`:''}
+      <div class="le-type">${esc(e.workType||'Other')}</div>
+      ${e.description?`<div class="le-desc">${esc(e.description)}</div>`:''}
+    </div>
+    <div style="text-align:right;min-width:50px;">
+      <div class="le-hours">${(+e.hours||0).toFixed(2)}h</div>
+      <div class="le-acts" style="justify-content:flex-end;margin-top:6px;">
+        <button class="btn btn-sm" onclick="editLogEntry('${e.id}')">&#9998;</button>
+        <button class="btn btn-sm btn-d" onclick="deleteLogEntry('${e.id}')">&#215;</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function exportLog(){
+  const rows=[['Date','Hours','Location','Work Type','Phase','Task','Description']];
+  [...S.workLog].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(e=>{
+    rows.push([e.date||'',e.hours||'',e.location||'',e.workType||'',e.phaseTag||'',e.taskText||'',e.description||'']);
+  });
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='LaurelLane_HoursLog.csv';
+  a.click();
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// CONTACTS
+// ──────────────────────────────────────────────────────────────────────────────
+function setContactFilter(f,el){
+  S.ccFilter=f;
+  document.querySelectorAll('#panel-contacts .fbtn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderContacts();
+}
+
+function renderContacts(){
+  const q=(document.getElementById('ccSearch')?.value||'').toLowerCase();
+  const grid=document.getElementById('ccGrid');
+  const filtered=S.contacts.filter(c=>{
+    const mc=S.ccFilter==='all'||c.cat===S.ccFilter;
+    const mq=!q||(c.name||'').toLowerCase().includes(q)||(c.org||'').toLowerCase().includes(q)||(c.notes||'').toLowerCase().includes(q);
+    return mc&&mq;
+  });
+  if(!filtered.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1;">NO CONTACTS FOUND</div>';updateStats();return;}
+  const catColor={Legal:'#c8a020',Government:'#2e6da4',Finance:'#2d9e6e',Construction:'#c55a11',Professional:'#8060c0',Other:'#6a7f8e'};
+  grid.innerHTML=filtered.map(c=>`<div class="cc">
+    <div class="cc-name">${esc(c.name)}</div>
+    <div class="cc-role" style="color:${catColor[c.cat]||'#6a7f8e'}">${esc(c.cat)}${c.org?' — '+esc(c.org):''}</div>
+    <div class="cc-details">
+      ${c.phone?`<div class="cc-row"><span class="cc-lbl">PHONE</span><span class="cc-val">${esc(c.phone)}</span></div>`:''}
+      ${c.email?`<div class="cc-row"><span class="cc-lbl">EMAIL</span><span class="cc-val"><a href="mailto:${esc(c.email)}">${esc(c.email)}</a></span></div>`:''}
+      ${c.link?`<div class="cc-row"><span class="cc-lbl">LINK</span><span class="cc-val"><a href="${esc(c.link)}" target="_blank">${esc(c.link)}</a></span></div>`:''}
+      ${c.notes?`<div class="cc-note">${esc(c.notes)}</div>`:''}
+    </div>
+    <div class="cc-acts">
+      <button class="btn btn-sm" onclick="logContact('${c.id}')" title="Log time for this contact">&#9201;</button>
+      <button class="btn btn-sm" onclick="editContact('${c.id}')">EDIT</button>
+      <button class="btn btn-sm btn-d" onclick="deleteContact('${c.id}')">DEL</button>
+    </div>
+  </div>`).join('');
+  updateStats();
+}
+
+function openContactModal(){
+  editCCId=null;
+  document.getElementById('ccModalTitle').textContent='ADD CONTACT';
+  ['ccName','ccOrg','ccPhone','ccEmail','ccLink','ccNotes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ccCat').value='Legal';
+  openModal('moContact');
+}
+
+function editContact(id){
+  const c=S.contacts.find(x=>x.id===id);if(!c)return;
+  editCCId=id;
+  document.getElementById('ccModalTitle').textContent='EDIT CONTACT';
+  document.getElementById('ccName').value=c.name||'';
+  document.getElementById('ccOrg').value=c.org||'';
+  document.getElementById('ccCat').value=c.cat||'Other';
+  document.getElementById('ccPhone').value=c.phone||'';
+  document.getElementById('ccEmail').value=c.email||'';
+  document.getElementById('ccLink').value=c.link||'';
+  document.getElementById('ccNotes').value=c.notes||'';
+  openModal('moContact');
+}
+
+function saveContact(){
+  const c={
+    id:editCCId||('cc'+Date.now()),
+    name:document.getElementById('ccName').value.trim(),
+    org:document.getElementById('ccOrg').value.trim(),
+    cat:document.getElementById('ccCat').value,
+    phone:document.getElementById('ccPhone').value.trim(),
+    email:document.getElementById('ccEmail').value.trim(),
+    link:document.getElementById('ccLink').value.trim(),
+    notes:document.getElementById('ccNotes').value.trim(),
+  };
+  if(!c.name)return;
+  if(editCCId){const i=S.contacts.findIndex(x=>x.id===editCCId);if(i>=0)S.contacts[i]=c;}
+  else S.contacts.unshift(c);
+  saveAll();closeModal('moContact');renderContacts();
+}
+
+function deleteContact(id){
+  if(!confirm('Delete this contact?'))return;
+  S.contacts=S.contacts.filter(c=>c.id!==id);
+  saveAll();renderContacts();
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// NOTES & LINKS
+// ──────────────────────────────────────────────────────────────────────────────
+function setNoteFilter(f,el){
+  S.ntFilter=f;
+  document.querySelectorAll('#panel-notes .fbtn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderNotes();
+}
+
+function openNoteModal(type){
+  editNoteId=null;
+  document.getElementById('ntModalTitle').textContent=type==='link'?'ADD LINK':'ADD NOTE';
+  document.getElementById('ntType').value=type;
+  document.getElementById('ntUrlGroup').style.display=type==='link'?'block':'none';
+  ['ntTitle','ntUrl','ntBody','ntTag'].forEach(id=>document.getElementById(id).value='');
+  openModal('moNote');
+}
+
+function editNote(id){
+  const n=S.notes.find(x=>x.id===id);if(!n)return;
+  editNoteId=id;
+  document.getElementById('ntModalTitle').textContent=n.type==='link'?'EDIT LINK':'EDIT NOTE';
+  document.getElementById('ntType').value=n.type||'note';
+  document.getElementById('ntUrlGroup').style.display=n.type==='link'?'block':'none';
+  document.getElementById('ntTitle').value=n.title||'';
+  document.getElementById('ntUrl').value=n.url||'';
+  document.getElementById('ntBody').value=n.body||'';
+  document.getElementById('ntTag').value=n.tag||'';
+  openModal('moNote');
+}
+
+function saveNote(){
+  const type=document.getElementById('ntType').value;
+  const n={
+    id:editNoteId||('nt'+Date.now()),
+    type,
+    title:document.getElementById('ntTitle').value.trim(),
+    url:type==='link'?document.getElementById('ntUrl').value.trim():'',
+    body:document.getElementById('ntBody').value.trim(),
+    tag:document.getElementById('ntTag').value.trim(),
+    date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+  };
+  if(!n.title&&!n.body&&!n.url)return;
+  if(editNoteId){const i=S.notes.findIndex(x=>x.id===editNoteId);if(i>=0)S.notes[i]={...S.notes[i],...n};}
+  else S.notes.unshift(n);
+  saveAll();closeModal('moNote');renderNotes();
+}
+
+function deleteNote(id){
+  if(!confirm('Delete this note?'))return;
+  S.notes=S.notes.filter(n=>n.id!==id);
+  saveAll();renderNotes();
+}
+
+function renderNotes(){
+  const q=(document.getElementById('ntSearch')?.value||'').toLowerCase();
+  const grid=document.getElementById('ntGrid');
+  const filtered=S.notes.filter(n=>{
+    const mt=S.ntFilter==='all'||n.type===S.ntFilter;
+    const mq=!q||(n.title||'').toLowerCase().includes(q)||(n.body||'').toLowerCase().includes(q)||(n.tag||'').toLowerCase().includes(q)||(n.url||'').toLowerCase().includes(q);
+    return mt&&mq;
+  });
+  if(!filtered.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1;">NO NOTES YET</div>';return;}
+  grid.innerHTML=filtered.map(n=>`<div class="nc">
+    <div class="nc-tag">${n.type==='link'?'&#9670; LINK':'&#9670; NOTE'}${n.tag?' — '+esc(n.tag):''}</div>
+    <div class="nc-title">${esc(n.title||'Untitled')}</div>
+    ${n.body?`<div class="nc-body">${esc(n.body)}</div>`:''}
+    ${n.url?`<div style="margin-top:8px;"><a class="nc-url" href="${esc(n.url)}" target="_blank">&#8599; ${esc(n.url)}</a></div>`:''}
+    <div class="nc-date">${n.date||''}</div>
+    <div class="nc-acts">
+      <button class="btn btn-sm" onclick="editNote('${n.id}')">EDIT</button>
+      <button class="btn btn-sm btn-d" onclick="deleteNote('${n.id}')">DEL</button>
+    </div>
+  </div>`).join('');
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// STATS
+// ──────────────────────────────────────────────────────────────────────────────
+function updateStats(done,total){
+  if(done===undefined){
+    let d=0,t=0;
+    PHASES.forEach(ph=>ph.sections.forEach(sec=>{
+      getSectionItems(ph.id,sec.id).forEach(item=>{
+        t++;if(S.checked[item.id])d++;
+      });
+    }));
+    done=d;total=t;
+  }
+  document.getElementById('sDone').textContent=done;
+  document.getElementById('sTotal').textContent=total;
+  document.getElementById('sHours').textContent=totalHours().toFixed(1);
+  document.getElementById('sCont').textContent=S.contacts.length;
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.mo').forEach(o=>{
+  o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// BACKUP / RESTORE
+// ──────────────────────────────────────────────────────────────────────────────
+function exportAllData(){
+  const payload={
+    _meta:{
+      exported:new Date().toISOString(),
+      app:'Laurel Lane Project Command',
+      version:'2.0'
+    },
+    state:S
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='LaurelLane_Backup_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function triggerImport(){
+  if(!confirm('Restoring a backup will REPLACE all current data. Continue?'))return;
+  document.getElementById('importFile').value='';
+  document.getElementById('importFile').click();
+}
+
+function importAllData(evt){
+  const file=evt.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const parsed=JSON.parse(e.target.result);
+      const data=parsed.state||parsed; // support both wrapped and raw
+      // Validate basic structure
+      if(typeof data!=='object'||Array.isArray(data))throw new Error('Invalid format');
+      S={
+        checked:data.checked||{},
+        itemNotes:data.itemNotes||{},
+        itemHints:data.itemHints||{},
+        customTasks:data.customTasks||{},
+        taskContacts:data.taskContacts||{},
+        subSteps:data.subSteps||{},
+        itemOrder:data.itemOrder||{},
+        workLog:Array.isArray(data.workLog)?data.workLog:[],
+        contacts:Array.isArray(data.contacts)&&data.contacts.length?data.contacts:DEFAULT_CONTACTS,
+        notes:Array.isArray(data.notes)?data.notes:[],
+        ckFilter:'all',logFilter:'all',ccFilter:'all',ntFilter:'all'
+      };
+      saveAll();
+      renderChecklist();renderLog();renderContacts();renderNotes();updateStats();
+      alert('Backup restored successfully. '+S.workLog.length+' log entries, '+S.contacts.length+' contacts.');
+    }catch(err){
+      alert('Could not read backup file: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// TAX REPORT EXPORT
+// ──────────────────────────────────────────────────────────────────────────────
+function exportTaxReport(){
+  if(!S.workLog.length){alert('No log entries to export.');return;}
+
+  const entries=[...S.workLog].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const totalHrs=entries.reduce((a,e)=>a+(+e.hours||0),0);
+  const firstDate=entries[0]?.date||'';
+  const lastDate=entries[entries.length-1]?.date||'';
+
+  // ── Aggregations ──────────────────────────────────────────────────────────
+  // By work type
+  const byType={};
+  entries.forEach(e=>{
+    const t=e.workType||'Other';
+    if(!byType[t])byType[t]={hours:0,count:0};
+    byType[t].hours+=(+e.hours||0);byType[t].count++;
+  });
+
+  // By phase
+  const byPhase={};
+  entries.forEach(e=>{
+    const p=e.phaseTag||'General';
+    if(!byPhase[p])byPhase[p]={hours:0,count:0};
+    byPhase[p].hours+=(+e.hours||0);byPhase[p].count++;
+  });
+
+  // By month
+  const byMonth={};
+  entries.forEach(e=>{
+    if(!e.date)return;
+    const m=e.date.slice(0,7);
+    if(!byMonth[m])byMonth[m]={hours:0,entries:[]};
+    byMonth[m].hours+=(+e.hours||0);
+    byMonth[m].entries.push(e);
+  });
+
+  // By quarter
+  const byQ={};
+  entries.forEach(e=>{
+    if(!e.date)return;
+    const [yr,mo]=e.date.split('-');
+    const q=Math.ceil(parseInt(mo)/3);
+    const k=yr+'Q'+q;
+    if(!byQ[k])byQ[k]={hours:0,count:0,label:`${yr} Q${q} (${['Jan-Mar','Apr-Jun','Jul-Sep','Oct-Dec'][q-1]})`};
+    byQ[k].hours+=(+e.hours||0);byQ[k].count++;
+  });
+
+  // On-site hours (IRS material participation — key metric)
+  const onsiteHrs=entries.filter(e=>(e.location||'').toLowerCase().includes('on-site')||(e.location||'').toLowerCase().includes('laurel')||e.workType==='On-site inspection').reduce((a,e)=>a+(+e.hours||0),0);
+  const phoneHrs=entries.filter(e=>e.workType==='Phone call').reduce((a,e)=>a+(+e.hours||0),0);
+  const researchHrs=entries.filter(e=>e.workType==='Research / Review').reduce((a,e)=>a+(+e.hours||0),0);
+  const adminHrs=entries.filter(e=>e.workType==='Administrative').reduce((a,e)=>a+(+e.hours||0),0);
+
+  function fmtDt(d){if(!d)return'';try{return new Date(d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});}catch(e){return d;}}
+  function row(cells,hdr){
+    const tag=hdr?'th':'td';
+    return '<tr>'+cells.map(c=>`<${tag} style="${hdr?'background:#1a2a3a;color:#4a9fd4;font-family:monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;':'color:#c8d4dc;font-family:Arial,sans-serif;font-size:12px;'}padding:7px 10px;border:1px solid #2a3038;">${c}</${tag}>`).join('')+'</tr>';
+  }
+
+  const typeTableRows=Object.entries(byType).sort((a,b)=>b[1].hours-a[1].hours).map(([t,v])=>row([t,v.count,v.hours.toFixed(2)+' hrs',((v.hours/totalHrs)*100).toFixed(1)+'%']));
+  const phaseTableRows=Object.entries(byPhase).sort((a,b)=>b[1].hours-a[1].hours).map(([p,v])=>row([p,v.count,v.hours.toFixed(2)+' hrs',((v.hours/totalHrs)*100).toFixed(1)+'%']));
+  const qTableRows=Object.entries(byQ).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>row([v.label,v.count,v.hours.toFixed(2)+' hrs']));
+
+  const monthSections=Object.entries(byMonth).sort((a,b)=>a[0].localeCompare(b[0])).map(([month,data])=>{
+    const [yr,mo]=month.split('-');
+    const mLabel=new Date(yr,parseInt(mo)-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    const entryRows=data.entries.map(e=>row([
+      fmtDt(e.date),
+      e.hours.toFixed(2)+' h',
+      e.location||'—',
+      e.workType||'Other',
+      e.phaseTag||'—',
+      e.taskText||'General',
+      e.description||''
+    ]));
+    return `<div style="margin-bottom:28px;">
+      <div style="font-family:monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#c55a11;background:#111416;border-left:3px solid #c55a11;padding:7px 14px;margin-bottom:8px;">
+        ${mLabel} &nbsp;&nbsp; <span style="color:#e07030;">${data.hours.toFixed(2)} hrs</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        ${row(['Date','Hours','Location','Work Type','Phase','Task','Description'],true)}
+        ${entryRows.join('')}
+      </table>
+    </div>`;
+  }).join('');
+
+  const allRows=entries.map(e=>row([
+    fmtDt(e.date),e.hours.toFixed(2)+' h',e.location||'—',e.workType||'Other',e.phaseTag||'—',e.taskText||'General',e.description||''
+  ]));
+
+  const html=`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Laurel Lane — Material Participation & Hours Log</title>
+<style>
+  body{background:#0a0c0e;color:#c8d4dc;font-family:Arial,sans-serif;margin:0;padding:0;}
+  .page{max-width:1100px;margin:0 auto;padding:40px 32px;}
+  h1{font-family:monospace;font-size:28px;letter-spacing:4px;text-transform:uppercase;color:#e8f0f5;border-bottom:2px solid #c55a11;padding-bottom:12px;margin-bottom:4px;}
+  h2{font-family:monospace;font-size:14px;letter-spacing:3px;text-transform:uppercase;color:#c55a11;margin:32px 0 10px;}
+  h3{font-family:monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#4a9fd4;margin:20px 0 8px;}
+  .meta{font-family:monospace;font-size:11px;color:#6a7f8e;margin-bottom:32px;}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px;}
+  .stat-card{background:#111416;border:1px solid #2a3038;border-top:2px solid #c55a11;padding:16px;text-align:center;}
+  .stat-num{font-family:monospace;font-size:32px;font-weight:bold;color:#e07030;}
+  .stat-lbl{font-family:monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6a7f8e;margin-top:4px;}
+  table{width:100%;border-collapse:collapse;margin-bottom:16px;}
+  .notice{background:#111416;border-left:3px solid #2e6da4;padding:12px 16px;font-size:12px;color:#6a7f8e;margin-bottom:24px;font-family:monospace;}
+  .notice strong{color:#4a9fd4;}
+  .section-divider{border:none;border-top:1px solid #2a3038;margin:32px 0;}
+  @media print{body{background:#fff;color:#000;} .stat-card{border:1px solid #ccc;} .notice{background:#f5f5f5;border-color:#999;} h1{color:#000;border-color:#c55a11;} h2{color:#c55a11;} h3{color:#2e6da4;} .stat-num{color:#c55a11;} .stat-lbl,.meta{color:#666;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Laurel Lane — Material Participation &amp; Hours Log</h1>
+<div class="meta">
+  Property: TBD Laurel Lane, Kerhonkson, NY 12446 &nbsp;|&nbsp;
+  Period: ${fmtDt(firstDate)} – ${fmtDt(lastDate)} &nbsp;|&nbsp;
+  Report Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'})}
+</div>
+
+<div class="notice">
+  <strong>IRS MATERIAL PARTICIPATION NOTICE:</strong> To deduct STR losses against W2 income under IRC §469, the taxpayer must materially participate: 
+  (1) more than 100 hours in the activity AND (2) more hours than any other single individual. 
+  This log serves as contemporaneous documentation per IRS requirements. Retain with tax records.
+</div>
+
+<h2>Summary Statistics</h2>
+<div class="stat-grid">
+  <div class="stat-card"><div class="stat-num">${totalHrs.toFixed(1)}</div><div class="stat-lbl">Total Hours</div></div>
+  <div class="stat-card"><div class="stat-num">${onsiteHrs.toFixed(1)}</div><div class="stat-lbl">On-Site Hours</div></div>
+  <div class="stat-card"><div class="stat-num">${phoneHrs.toFixed(1)}</div><div class="stat-lbl">Phone Call Hours</div></div>
+  <div class="stat-card"><div class="stat-num">${researchHrs.toFixed(1)}</div><div class="stat-lbl">Research Hours</div></div>
+  <div class="stat-card"><div class="stat-num">${adminHrs.toFixed(1)}</div><div class="stat-lbl">Admin Hours</div></div>
+  <div class="stat-card"><div class="stat-num">${entries.length}</div><div class="stat-lbl">Log Entries</div></div>
+</div>
+
+<div style="background:#111416;border:1px solid #2a3038;padding:14px 18px;margin-bottom:24px;font-family:monospace;font-size:13px;">
+  <span style="color:#6a7f8e;">MATERIAL PARTICIPATION STATUS: &nbsp;</span>
+  ${totalHrs>=100
+    ?'<span style="color:#2d9e6e;font-weight:bold;">&#10003; THRESHOLD MET — '+totalHrs.toFixed(1)+' hours logged (&ge;100 required)</span>'
+    :'<span style="color:#a03030;font-weight:bold;">&#9888; BELOW THRESHOLD — '+totalHrs.toFixed(1)+' hours logged / '+(100-totalHrs).toFixed(1)+' hours remaining to reach 100</span>'}
+</div>
+
+<hr class="section-divider">
+<h2>Hours by Work Type</h2>
+<table>
+  ${row(['Work Type','Entries','Hours','% of Total'],true)}
+  ${typeTableRows.join('')}
+  ${row(['<strong>TOTAL</strong>',entries.length,'<strong>'+totalHrs.toFixed(2)+' hrs</strong>','100%'],false)}
+</table>
+
+<hr class="section-divider">
+<h2>Hours by Project Phase</h2>
+<table>
+  ${row(['Phase','Entries','Hours','% of Total'],true)}
+  ${phaseTableRows.join('')}
+</table>
+
+<hr class="section-divider">
+<h2>Hours by Quarter</h2>
+<table>
+  ${row(['Quarter','Entries','Hours'],true)}
+  ${qTableRows.join('')}
+</table>
+
+<hr class="section-divider">
+<h2>Detailed Log by Month</h2>
+${monthSections}
+
+<hr class="section-divider">
+<h2>Complete Chronological Log (All Entries)</h2>
+<table>
+  ${row(['Date','Hours','Location','Work Type','Phase','Task','Description'],true)}
+  ${allRows.join('')}
+  ${row(['<strong>TOTAL</strong>','<strong>'+totalHrs.toFixed(2)+' h</strong>','','','','',''],false)}
+</table>
+
+<hr class="section-divider">
+<div class="notice" style="margin-top:24px;font-size:11px;">
+  <strong>RECORD KEEPING NOTES:</strong> Per IRS guidance, material participation records should be maintained 
+  contemporaneously and retained for at least 3 years after the tax return due date. 
+  This report should be printed or saved as PDF and retained with your tax records for the applicable year(s). 
+  Consult your CPA or tax advisor for year-end reporting. Property: TBD Laurel Lane, Kerhonkson, NY 12446. 
+  Entity: LandCo/OpCo LLC (pending formation).
+</div>
+
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('[PWA] Service worker registered:', reg.scope))
+      .catch(err => console.warn('[PWA] SW registration failed:', err));
+  });
+}
+
+// iOS install prompt helper
+window.addEventListener('load', () => {
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if (isIos && !isStandalone) {
+    const shown = sessionStorage.getItem('ll_ios_prompt');
+    if (!shown) {
+      sessionStorage.setItem('ll_ios_prompt', '1');
+      const d = document.createElement('div');
+      d.id = 'ios-banner';
+      d.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1e2428;border-top:2px solid #c55a11;padding:12px 16px;display:flex;align-items:center;gap:12px;z-index:9999;font-family:monospace;font-size:12px;color:#c8d4dc;';
+      d.innerHTML = '<span style="flex:1;">&#128247; Install: tap <strong style="color:#e07030;">Share</strong> then <strong style="color:#e07030;">Add to Home Screen</strong></span><button onclick="document.getElementById('ios-banner').remove()" style="background:none;border:1px solid #3a4450;color:#6a7f8e;padding:4px 10px;cursor:pointer;font-family:monospace;font-size:11px;">&#215;</button>';
+      document.body.appendChild(d);
+    }
+  }
+});
+
+// Android / desktop install prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.style.display = 'inline-block';
+});
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.style.display = 'none';
+  deferredPrompt = null;
+});
+function triggerInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+  }
+}
+</script>
+</body>
+</html>`;
+
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='LaurelLane_TaxReport_'+new Date().toISOString().slice(0,10)+'.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// SUBSTEPS
+// ──────────────────────────────────────────────────────────────────────────────
+function toggleSubStep(itemId, ssId){
+  const key=itemId+'_ss_'+ssId;
+  S.checked[key]=!S.checked[key];
+  saveAll();renderChecklist();
+}
+
+function toggleSubInput(itemId, ev){
+  ev.stopPropagation();
+  const inp=document.getElementById('asi_'+itemId);
+  if(!inp)return;
+  if(inp.classList.contains('open')){
+    inp.classList.remove('open');inp.value='';
+  } else {
+    inp.classList.add('open');inp.focus();
+  }
+}
+
+function ssKeydown(itemId, ev){
+  if(ev.key==='Enter'){commitSubStep(itemId);}
+  if(ev.key==='Escape'){
+    const inp=document.getElementById('asi_'+itemId);
+    if(inp){inp.classList.remove('open');inp.value='';}
+  }
+}
+
+function commitSubStep(itemId){
+  const inp=document.getElementById('asi_'+itemId);
+  if(!inp)return;
+  const txt=inp.value.trim();
+  if(!txt)return;
+  if(!S.subSteps[itemId])S.subSteps[itemId]=[];
+  S.subSteps[itemId].push({id:'ss_'+Date.now(),text:txt});
+  saveAll();renderChecklist();
+}
+
+function addSubStep(itemId, ev){
+  // legacy fallback — not used with new inline UI
+  ev.stopPropagation();
+  toggleSubInput(itemId, ev);
+}
+
+function editSubStep(itemId, ssId, ev){
+  ev.stopPropagation();
+  const ss=(S.subSteps[itemId]||[]).find(s=>s.id===ssId);
+  if(!ss)return;
+  const el=document.getElementById('ss_'+itemId+'_'+ssId);
+  if(!el)return;
+  // Replace substep row with inline edit
+  const orig=el.outerHTML;
+  el.innerHTML=`
+    <div class="ss-inline-edit" style="display:flex;gap:4px;flex:1;">
+      <input class="ss-inline-input" id="sse_${ssId}" value="${esc(ss.text)}" onkeydown="ssEditKey('${itemId}','${ssId}',event)">
+      <button class="ss-inline-save" onclick="saveSubEdit('${itemId}','${ssId}')">OK</button>
+      <button class="ss-inline-cancel" onclick="renderChecklist()">&#215;</button>
+    </div>`;
+  el.style.padding='0';
+  const inp=document.getElementById('sse_'+ssId);
+  if(inp){inp.focus();inp.select();}
+}
+
+function ssEditKey(itemId, ssId, ev){
+  if(ev.key==='Enter')saveSubEdit(itemId,ssId);
+  if(ev.key==='Escape')renderChecklist();
+}
+
+function saveSubEdit(itemId, ssId){
+  const inp=document.getElementById('sse_'+ssId);
+  if(!inp)return;
+  const txt=inp.value.trim();
+  if(!txt){renderChecklist();return;}
+  const arr=S.subSteps[itemId]||[];
+  const i=arr.findIndex(s=>s.id===ssId);
+  if(i>=0)arr[i].text=txt;
+  saveAll();renderChecklist();
+}
+
+function delSubStep(itemId, ssId, ev){
+  ev.stopPropagation();
+  S.subSteps[itemId]=(S.subSteps[itemId]||[]).filter(s=>s.id!==ssId);
+  delete S.checked[itemId+'_ss_'+ssId];
+  saveAll();renderChecklist();
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// THEME
+// ──────────────────────────────────────────────────────────────────────────────
+function applyTheme(theme){
+  const isLight = theme === 'light';
+  document.documentElement.classList.toggle('light', isLight);
+  const btn = document.getElementById('themeBtn');
+  if(btn){
+    btn.textContent = isLight ? '🌙 DARK' : '☀ LIGHT';
+    btn.title = isLight ? 'Switch to dark theme' : 'Switch to light theme';
+  }
+  try{localStorage.setItem('ll_theme', theme);}catch(e){}
+}
+
+function toggleTheme(){
+  const isLight = document.documentElement.classList.contains('light');
+  applyTheme(isLight ? 'dark' : 'light');
+}
+
+function loadTheme(){
+  try{
+    const saved = localStorage.getItem('ll_theme');
+    applyTheme(saved === 'light' ? 'light' : 'dark');
+  }catch(e){ applyTheme('dark'); }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────────────────────────────────────────
+loadAll();
+loadTheme();
+renderChecklist();
+updateStats();
+</script>
+</body>
+</html>
