@@ -4,20 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Laurel Lane — Project Command</title>
-
-<!-- PWA -->
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#c55a11">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Laurel Lane">
-<link rel="apple-touch-icon" href="./icon-192.png">
-<link rel="apple-touch-icon" sizes="152x152" href="./icon-152.png">
-<link rel="apple-touch-icon" sizes="144x144" href="./icon-144.png">
-<link rel="apple-touch-icon" sizes="128x128" href="./icon-128.png">
-<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
-
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -255,7 +241,6 @@ html.light .phase-tag{background:rgba(197,90,17,.08);}
     <button class="btn btn-sm btn-p" onclick="exportAllData()" title="Export full backup as JSON">&#8681; BACKUP</button>
     <button class="btn btn-sm" onclick="triggerImport()" title="Restore from backup JSON">&#8679; RESTORE</button>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle light/dark theme">☀ LIGHT</button>
-    <button class="btn btn-sm btn-p" id="installBtn" onclick="triggerInstall()" style="display:none;" title="Install app to home screen">&#8615; INSTALL</button>
     <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importAllData(event)">
   </div>
 </div>
@@ -1722,53 +1707,6 @@ ${monthSections}
 </div>
 
 </div>
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('[PWA] Service worker registered:', reg.scope))
-      .catch(err => console.warn('[PWA] SW registration failed:', err));
-  });
-}
-
-// iOS install prompt helper
-window.addEventListener('load', () => {
-  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-  if (isIos && !isStandalone) {
-    const shown = sessionStorage.getItem('ll_ios_prompt');
-    if (!shown) {
-      sessionStorage.setItem('ll_ios_prompt', '1');
-      const d = document.createElement('div');
-      d.id = 'ios-banner';
-      d.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1e2428;border-top:2px solid #c55a11;padding:12px 16px;display:flex;align-items:center;gap:12px;z-index:9999;font-family:monospace;font-size:12px;color:#c8d4dc;';
-      d.innerHTML = '<span style="flex:1;">&#128247; Install: tap <strong style="color:#e07030;">Share</strong> then <strong style="color:#e07030;">Add to Home Screen</strong></span><button onclick="document.getElementById('ios-banner').remove()" style="background:none;border:1px solid #3a4450;color:#6a7f8e;padding:4px 10px;cursor:pointer;font-family:monospace;font-size:11px;">&#215;</button>';
-      document.body.appendChild(d);
-    }
-  }
-});
-
-// Android / desktop install prompt
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const btn = document.getElementById('installBtn');
-  if (btn) btn.style.display = 'inline-block';
-});
-window.addEventListener('appinstalled', () => {
-  const btn = document.getElementById('installBtn');
-  if (btn) btn.style.display = 'none';
-  deferredPrompt = null;
-});
-function triggerInstall() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
-  }
-}
-</'+'script>
 </'+'body>
 </'+'html>`;
 
