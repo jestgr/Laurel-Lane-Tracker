@@ -1,12 +1,12 @@
 // Laurel Lane PWA — Service Worker
-const CACHE = 'laurel-lane-v1';
+const CACHE = 'laurel-lane-v2';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  'https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap'
+  'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap'
 ];
 
 // Install — cache all core assets
